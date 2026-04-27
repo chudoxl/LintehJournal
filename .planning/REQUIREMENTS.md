@@ -139,53 +139,61 @@
 
 ## Traceability
 
-Какие фазы покрывают какие требования. Заполняется при создании ROADMAP.md.
+Какие фазы покрывают какие требования.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| ACCT-01 | TBD | Pending |
-| ACCT-02 | TBD | Pending |
-| ACCT-03 | TBD | Pending |
-| ACCT-04 | TBD | Pending |
-| GRAD-01 | TBD | Pending |
-| GRAD-02 | TBD | Pending |
-| GRAD-03 | TBD | Pending |
-| GRAD-04 | TBD | Pending |
-| GRAD-05 | TBD | Pending |
-| SCHED-01 | TBD | Pending |
-| SCHED-02 | TBD | Pending |
-| SCHED-03 | TBD | Pending |
-| SCHED-04 | TBD | Pending |
-| HW-01 | TBD | Pending |
-| ATT-01 | TBD | Pending |
-| ATT-02 | TBD | Pending |
-| MSG-01 | TBD | Pending |
-| NOTIF-01 | TBD | Pending |
-| NOTIF-02 | TBD | Pending |
-| NOTIF-03 | TBD | Pending |
-| NOTIF-04 | TBD | Pending |
-| NOTIF-05 | TBD | Pending |
-| OFFL-01 | TBD | Pending |
-| OFFL-02 | TBD | Pending |
-| OFFL-03 | TBD | Pending |
-| OFFL-04 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| UI-02 | TBD | Pending |
-| UI-03 | TBD | Pending |
-| UI-04 | TBD | Pending |
-| ANALYT-01 | TBD | Pending |
-| ANALYT-02 | TBD | Pending |
-| COMP-01 | TBD | Pending |
-| COMP-02 | TBD | Pending |
+| AUTH-01 | Phase 3 | Pending |
+| AUTH-02 | Phase 3 | Pending |
+| AUTH-03 | Phase 3 | Pending |
+| ACCT-01 | Phase 5 | Pending |
+| ACCT-02 | Phase 5 | Pending |
+| ACCT-03 | Phase 5 | Pending |
+| ACCT-04 | Phase 5 | Pending |
+| GRAD-01 | Phase 4 | Pending |
+| GRAD-02 | Phase 4 | Pending |
+| GRAD-03 | Phase 4 | Pending |
+| GRAD-04 | Phase 4 | Pending |
+| GRAD-05 | Phase 4 | Pending |
+| SCHED-01 | Phase 5 | Pending |
+| SCHED-02 | Phase 5 | Pending |
+| SCHED-03 | Phase 5 | Pending |
+| SCHED-04 | Phase 5 | Pending |
+| HW-01 | Phase 5 | Pending |
+| ATT-01 | Phase 5 | Pending |
+| ATT-02 | Phase 5 | Pending |
+| MSG-01 | Phase 5 | Pending |
+| NOTIF-01 | Phase 6 | Pending |
+| NOTIF-02 | Phase 6 | Pending |
+| NOTIF-03 | Phase 6 | Pending |
+| NOTIF-04 | Phase 6 | Pending |
+| NOTIF-05 | Phase 6 | Pending |
+| OFFL-01 | Phase 4 | Pending |
+| OFFL-02 | Phase 4 | Pending |
+| OFFL-03 | Phase 4 | Pending |
+| OFFL-04 | Phase 4 | Pending |
+| UI-01 | Phase 4 | Pending |
+| UI-02 | Phase 4 | Pending |
+| UI-03 | Phase 4 | Pending |
+| UI-04 | Phase 4 | Pending |
+| ANALYT-01 | Phase 4 | Pending |
+| ANALYT-02 | Phase 4 | Pending |
+| COMP-01 | Phase 1 | Pending |
+| COMP-02 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 37 total
-- Mapped to phases: 0 (заполнит roadmapper)
-- Unmapped: 37 ⚠️ (ожидаемо до создания ROADMAP.md)
+- Mapped to phases: 37 ✓
+- Unmapped: 0 ✓
+
+**Distribution:**
+- Phase 1 (Foundation & Compliance): 2 requirements (COMP-01, COMP-02)
+- Phase 2 (API Reverse-Engineering): 0 requirements (infrastructure — enables Phase 3+)
+- Phase 3 (Auth & Secure Storage): 3 requirements (AUTH-01..03)
+- Phase 4 (UI Shell + Grades + Offline): 15 requirements (GRAD-01..05, OFFL-01..04, UI-01..04, ANALYT-01..02)
+- Phase 5 (Multi-Account + Verticals): 12 requirements (ACCT-01..04, SCHED-01..04, HW-01, ATT-01..02, MSG-01)
+- Phase 6 (Background Sync + Notifications): 5 requirements (NOTIF-01..05)
 
 ---
 *Requirements defined: 2026-04-27*
-*Last updated: 2026-04-27 after initial definition*
+*Last updated: 2026-04-27 — traceability filled (37/37 mapped to 6 phases) after ROADMAP.md creation*
