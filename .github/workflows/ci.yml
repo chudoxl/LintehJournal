@@ -121,9 +121,17 @@ jobs:
           plutil -extract NSPrivacyTracking raw "$PLIST" | grep -q '^false$' \
             || (echo "ERROR: NSPrivacyTracking must be false (T-01-03 mitigation)" && exit 1)
 
-          echo "Step 5: verify NSPrivacyCollectedDataTypes is array (empty)"
-          COLLECTED=$(plutil -extract NSPrivacyCollectedDataTypes xml1 "$PLIST" -o -)
-          echo "$COLLECTED" | grep -qE '<array(/| )' \
-            || (echo "ERROR: NSPrivacyCollectedDataTypes must be an array (empty)" && exit 1)
+          echo "Step 5: verify NSPrivacyCollectedDataTypes is empty array (jq-based, robust to plutil output formatting)"
+          # WR-06 fix: regex `<array(/| )` ловил только <array/> и <array ...>, не matched
+          # `<array>` без whitespace и `<array\n` (multi-line empty arrays). Если Apple
+          # plutil future-version поменяет formatting — check тихо false-negative-нет.
+          # plutil -convert json + jq куда более robust: проверяем JSON-тип и длину.
+          COLLECTED_JSON=$(plutil -convert json -o - "$PLIST")
+          COLLECTED_TYPE=$(echo "$COLLECTED_JSON" | jq -r '.NSPrivacyCollectedDataTypes | type')
+          test "$COLLECTED_TYPE" = "array" \
+            || { echo "ERROR: NSPrivacyCollectedDataTypes must be JSON array (got type: $COLLECTED_TYPE)"; exit 1; }
+          COLLECTED_LEN=$(echo "$COLLECTED_JSON" | jq -r '.NSPrivacyCollectedDataTypes | length')
+          test "$COLLECTED_LEN" = "0" \
+            || { echo "ERROR: NSPrivacyCollectedDataTypes must be empty in Phase 1 (got length: $COLLECTED_LEN)"; exit 1; }
 
           echo "PrivacyInfo.xcprivacy passes all required-reason checks."
