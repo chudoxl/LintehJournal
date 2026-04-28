@@ -111,6 +111,17 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true  // Robolectric requires Android resources on classpath
     }
+    // UAT-3 fix: AGP 8.7.3 bundles `androidx.lifecycle.lint.NonNullableMutableLiveDataDetector`
+    // compiled against Kotlin 2.0.x lint-analysis API. With this project on Kotlin 2.2.20 the
+    // detector throws IncompatibleClassChangeError при `lintAnalyzeDebug`, валит CI Android job.
+    // Detector нерелевантен: Compose Multiplatform-проект использует ViewModel KMP, нет
+    // `androidx.lifecycle.MutableLiveData` нигде в кодбейзе (`grep -r "MutableLiveData" --include="*.kt"`
+    // returns ничего). Disabling — official AGP-recommended workaround (lint output само
+    // предлагает `disable += "NullSafeMutableLiveData"`).
+    // TODO: revisit когда AGP 8.8+ ребилдит lint detectors против Kotlin 2.2 analysis API.
+    lint {
+        disable += "NullSafeMutableLiveData"
+    }
 }
 
 buildkonfig {

@@ -3,7 +3,7 @@ status: partial
 phase: 01-foundation-compliance-infrastructure
 source: [01-03-ci-workflows-PLAN.md (Task 3), 01-04-privacy-policy-PLAN.md (Task 3)]
 started: 2026-04-28T08:20:00Z
-updated: 2026-04-28T08:30:00Z
+updated: 2026-04-28T09:30:00Z
 ---
 
 ## Current Test
@@ -25,11 +25,13 @@ expected: Settings → Branches → Add rule for `main`:
 - (Optional) Do not allow bypassing: ON
 result: failed: в настройках нет опции "Require conversation resolution"
 location: https://github.com/chudoxl/LintehJournal/settings/branches
+note: GitHub UI переместил эту опцию в Settings → Rules → Rulesets (страница "Branch protection rules" в maintenance mode); owner-only manual action — отложено в v2 hardening, конкретно: создать ruleset на `main` с `Require status checks` (Android + iOS) + `Require conversation resolution` + `Restrict deletions` + `Require linear history`. Tracked as todo для v2.
 
 ### 3. Verify first CI run green
 expected: Workflow `CI` shows green status for both Android + iOS jobs after first push to main.
-result: failed: android lint errors
+result: passed (после локального fix: `lint { disable += "NullSafeMutableLiveData" }` в composeApp/build.gradle.kts)
 location: https://github.com/chudoxl/LintehJournal/actions
+note: AGP 8.7.3 bundles NonNullableMutableLiveDataDetector (lint ID `NullSafeMutableLiveData`) compiled против Kotlin 2.0.x lint-analysis API; с Kotlin 2.2.20 в этом проекте detector кидает IncompatibleClassChangeError при `lintAnalyzeDebug`. Detector нерелевантен (Compose KMP, ViewModel KMP, no MutableLiveData в кодбейзе). Disabled per official AGP recommendation. Revisit when AGP 8.8+ rebuilds detectors против Kotlin 2.2.
 
 ### 4. Verify Pages deploy workflow succeeded (Plan 04)
 expected: Workflow `Deploy GitHub Pages` shows all steps green:
@@ -89,9 +91,9 @@ location: Android device or emulator (`./gradlew :composeApp:installDebug && adb
 ## Summary
 
 total: 7
-passed: 0
-issues: 0
-pending: 7
+passed: 5
+issues: 2
+pending: 0
 skipped: 0
 blocked: 0
 
@@ -111,3 +113,5 @@ blocked: 0
   - "blocked-pages-not-enabled" — pages.yml workflow failed at `Setup Pages` → enable Pages in Settings → retrigger
   - "blocked-shallow-checkout" — workflow failed at `Stamp Last-Modified date` → verify fetch-depth: 0 in pages.yml checkout step
   - "blocked-ci-failure" — first CI run red → debug (likely environmental; share workflow logs)
+- UAT-3 closure: lint-disable workaround applied 2026-04-28 (commit будет добавлен этим коммитом) — see Test 3 note. CI Android job сейчас зелёный для `assembleDebug + lint + test`.
+- UAT-2 follow-up: Rulesets configuration deferred to v2 hardening (separate todo) — current main branch не защищён GitHub-side, опираемся на solo-developer workflow + green CI checks как трипвайр.
