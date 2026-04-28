@@ -1,0 +1,57 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # BLOCKER 3 iter 2 fix: full git history требуется для `git log -- file` substitution в "Stamp Last-Modified date" step
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Stamp Last-Modified date
+        # BLOCKER 4 mitigation: substitute {{LAST_MODIFIED}} placeholder in HTML footer
+        # с actual date последнего git commit к docs/privacy/index.html.
+        # Дата автоматически обновляется при каждом edit policy без manual touch.
+        # BLOCKER 3 iter 2: requires fetch-depth: 0 above (otherwise `git log -- file` returns empty on shallow checkout).
+        run: |
+          set -euo pipefail
+          LAST_MODIFIED=$(git log -1 --format=%cs -- docs/privacy/index.html)
+          if [[ -z "${LAST_MODIFIED}" ]]; then
+            echo "ERROR: failed to derive Last-Modified date from git history"
+            echo "Hint: actions/checkout@v4 must use fetch-depth: 0 (default 1 = shallow → empty git log)"
+            exit 1
+          fi
+          echo "Stamping Last-Modified=${LAST_MODIFIED}"
+          sed -i "s|{{LAST_MODIFIED}}|${LAST_MODIFIED}|g" docs/privacy/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
