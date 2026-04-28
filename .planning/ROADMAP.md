@@ -27,9 +27,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Requirements**: COMP-01, COMP-02
 **Success Criteria** (what must be TRUE):
   1. CI собирает iOS и Android из коробки (assembleDebug + iosX64Test) — обе платформы зелёные на каждом коммите
-  2. Разработчик может открыть проект в Android Studio + Xcode и запустить заглушку «Hello LinTech» на симуляторе iPhone и Android-устройстве
+  2. Разработчик может открыть проект в Android Studio и запустить заглушку «Hello LinTech» на Android-устройстве/эмуляторе. iOS «Hello LinTech» валидируется через автоматический `iosX64Test` screenshot-test в CI на macos-15 runner-е (dev-host разработчика — Linux Mint, локальный Xcode недоступен)
   3. Privacy Policy опубликована на отдельном URL (GitHub Pages) и линк виден из проекта (README + строка ресурсов для будущего «О приложении»)
-  4. iOS-сборка содержит `PrivacyInfo.xcprivacy` с required-reason API (`NSPrivacyAccessedAPICategoryUserDefaults` CA92.1, `NSPrivacyAccessedAPICategoryFileTimestamp` C617.1), `NSPrivacyTracking=false`, `NSPrivacyCollectedDataTypes=[]` — Xcode «Validate App» не выдаёт ITMS-91053
+  4. iOS-сборка содержит `PrivacyInfo.xcprivacy` с required-reason API (`NSPrivacyAccessedAPICategoryUserDefaults` CA92.1, `NSPrivacyAccessedAPICategoryFileTimestamp` C617.1), `NSPrivacyTracking=false`, `NSPrivacyCollectedDataTypes=[]` — Xcode «Validate App» не выдаёт ITMS-91053; CI lint (`plutil -lint` + grep CA92.1, C617.1, NSPrivacyTracking=false) на macos-job не выдаёт ошибок на каждом коммите
   5. Convention plugins (`build-logic/`) применяются к фейковому модулю — добавление нового KMP-модуля займёт ≤5 строк build.gradle.kts
 **Plans:** 6 plans
 
