@@ -3,7 +3,7 @@ phase: 1
 slug: foundation-compliance-infrastructure
 status: draft
 nyquist_compliant: false
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-04-27
 ---
 
@@ -40,7 +40,18 @@ created: 2026-04-27
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 01-XX-XX | TBD | TBD | COMP-01 / COMP-02 | TBD | TBD | TBD | TBD | TBD | ⬜ pending |
+| 01-01-01 | 01 | 0 | infra | T-01-02 | Reproducible build | smoke (compile) | `./gradlew --version` | `gradlew` | ⬜ |
+| 01-01-02 | 01 | 0 | infra | — | Convention plugins compile | smoke | `./gradlew :build-logic:convention:assemble` | `build-logic/convention/src/main/kotlin/*Plugin.kt` | ⬜ |
+| 01-01-03 | 01 | 0 | infra | — | Multi-module skeleton builds | smoke | `./gradlew assembleDebug compileKotlinIosX64` | 4 module build.gradle.kts | ⬜ |
+| 01-02-01 | 02 | 1 | COMP-01 | — | openUrl expect/actual | unit | `./gradlew :core:platform:test` | `core/platform/src/*/kotlin/.../UrlOpener*.kt` | ⬜ |
+| 01-02-02 | 02 | 1 | COMP-01 | — | App() composable + BuildKonfig | unit/UI | `./gradlew :composeApp:iosX64Test --tests AppTest` | `composeApp/src/commonMain/kotlin/.../App.kt` | ⬜ |
+| 01-03-01 | 03 | 2 | COMP-01,COMP-02 | T-01-04 | CI Android job | smoke | gh workflow run via push | `.github/workflows/ci.yml` | ⬜ |
+| 01-03-02 | 03 | 2 | COMP-02 | — | CI iOS job + Privacy lint | smoke | gh workflow run via push (macos) | `.github/workflows/ci.yml` | ⬜ |
+| 01-04-01 | 04 | 3 | COMP-01 | T-01-01 | Privacy Policy HTML | smoke | `curl -sf $URL \| grep -q "Политика конфиденциальности"` | `docs/privacy/index.html` | ⬜ |
+| 01-04-02 | 04 | 3 | COMP-01 | — | Pages workflow auto-deploy | smoke | gh workflow run + curl URL | `.github/workflows/pages.yml` | ⬜ |
+| 01-05-01 | 05 | 4 | COMP-02 | T-01-03 | apple-privacy-manifests plugin | smoke | `./gradlew :composeApp:linkDebugFrameworkIosX64` | `composeApp/build.gradle.kts` privacyManifest{} | ⬜ |
+| 01-05-02 | 05 | 4 | COMP-02 | T-01-03 | PrivacyInfo.xcprivacy plist + CI lint | smoke | `plutil -lint composeApp/PrivacyInfo.xcprivacy` (CI macos-15) | `composeApp/PrivacyInfo.xcprivacy` | ⬜ |
+| 01-06-01 | 06 | 5 | COMP-01,COMP-02 | — | ROADMAP edit + CLAUDE.md + README | manual review | `grep "iosX64Test screenshot" .planning/ROADMAP.md` | ROADMAP.md, CLAUDE.md, README.md | ⬜ |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
