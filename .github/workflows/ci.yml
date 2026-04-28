@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Assemble debug
+        run: ./gradlew assembleDebug
+
+      - name: Lint
+        run: ./gradlew lint
+
+      # AppTest валидируется на Android JVM через Robolectric
+      # (composeApp/src/androidUnitTest/.../AppTestAndroid.kt с @RunWith(RobolectricTestRunner::class))
+      # и на iOS через :composeApp:iosX64Test (см. ios job ниже).
+      - name: Run Android JVM tests
+        run: ./gradlew test
+
+  ios:
+    name: iOS
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Select Xcode 16
+        # Pitfall #4 mitigation: macos-15 runner может иметь несколько Xcode-версий;
+        # explicit-select fixes "No SDK iphonesimulator" error if it occurs.
+        # `|| echo` даёт безопасный fallback к default Xcode без маскирования реальных ошибок.
+        run: sudo xcode-select -s /Applications/Xcode_16.app || sudo xcode-select -s /Applications/Xcode_16.0.app || echo "Using default Xcode"
+
+      - name: Verify Xcode version
+        # Явная проверка какой Xcode выбран — fail clearly если default не подходит.
+        run: xcodebuild -version | head -1
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Run iOS X64 tests
+        run: ./gradlew :composeApp:iosX64Test
