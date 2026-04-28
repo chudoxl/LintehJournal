@@ -55,6 +55,12 @@ kotlin {
             //
             // LOAD-BEARING: Plan 05 Task 2 (PrivacyManifest plugin) должен использовать targeted Edit,
             // НЕ full rewrite — иначе этот блок исчезнет и Plan 02 fix iter 1 регрессирует.
+            //
+            // POLICY (WR-07): НЕ добавлять androidx.compose.ui:ui-test-* напрямую (например,
+            // ui-test-junit4) в androidUnitTest или иной source set. Все Compose-test deps
+            // должны идти через compose.uiTest (CMP-managed), чтобы CMP-version и Android
+            // Compose UI version оставались aligned. Drift между CMP 1.10.x и
+            // androidx.compose.ui-test 1.7.x → cryptic ClassDef errors at test runtime.
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.uiTest)
         }
