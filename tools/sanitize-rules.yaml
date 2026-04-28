@@ -1,0 +1,10 @@
+# Cookie names whose values get replaced with 32 'X' characters.
+# Initial list — extend after first HAR capture (Plan 02) reveals AVERS cookie names.
+cookie_names:
+  - JSESSIONID
+  - PHPSESSID
+  - sessionId
+  - session_id
+  - aversSession
+  - csrf_token
+  - XSRF-TOKEN
