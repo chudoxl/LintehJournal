@@ -1,8 +1,12 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinComposeCompiler)
     alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.buildkonfig)
     id("lintech-test")
 }
 
@@ -29,6 +33,16 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
         }
+        commonTest.dependencies {
+            // BLOCKER 1 mitigation iter 1: compose.uiTest добавляется здесь, НЕ в LintechTestConventionPlugin —
+            // composeApp уже применяет org.jetbrains.compose plugin, поэтому ComposePlugin.Dependencies
+            // resolve-ится без circular dependency на non-UI модули (:core:platform, :core:network).
+            //
+            // LOAD-BEARING: Plan 05 Task 2 (PrivacyManifest plugin) должен использовать targeted Edit,
+            // НЕ full rewrite — иначе этот блок исчезнет и Plan 02 fix iter 1 регрессирует.
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+        }
     }
 }
 
@@ -50,5 +64,33 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+buildkonfig {
+    packageName = "io.github.chudoxl.linteh.journal"
+    objectName = "BuildKonfig"
+
+    defaultConfigs {
+        buildConfigField(
+            type = STRING,
+            name = "VERSION_NAME",
+            value = providers.gradleProperty("versionName").get(),
+        )
+        buildConfigField(
+            type = STRING,
+            name = "VERSION_CODE",
+            value = (
+                System.getenv("GITHUB_RUN_NUMBER")
+                    ?: providers.exec {
+                        commandLine("git", "rev-list", "--count", "HEAD")
+                    }.standardOutput.asText.get().trim().ifBlank { "1" }
+                ),
+        )
+        buildConfigField(
+            type = BOOLEAN,
+            name = "IS_DEBUG",
+            value = "true",
+        )
     }
 }

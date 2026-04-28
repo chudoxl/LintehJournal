@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="app_name">ЛИнТех Дневник</string>
+    <string name="privacy_policy_url">https://chudoxl.github.io/LintehJournal/privacy/</string>
+    <string name="open_button">Открыть</string>
+</resources>
