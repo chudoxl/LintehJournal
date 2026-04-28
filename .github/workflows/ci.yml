@@ -41,8 +41,11 @@ jobs:
       # AppTest валидируется на Android JVM через Robolectric
       # (composeApp/src/androidUnitTest/.../AppTestAndroid.kt с @RunWith(RobolectricTestRunner::class))
       # и на iOS через :composeApp:iosX64Test (см. ios job ниже).
-      - name: Run Android JVM tests
-        run: ./gradlew test
+      # NOTE: testDebugUnitTest only — release-variant unit tests не добавляют ценности
+      # (release manifest без ComponentActivity → Robolectric ActivityScenario.launch падает;
+      # debug variant покрывает весь test surface).
+      - name: Run Android JVM tests (debug)
+        run: ./gradlew testDebugUnitTest
 
   ios:
     name: iOS
