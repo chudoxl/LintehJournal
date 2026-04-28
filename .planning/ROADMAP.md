@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 6 plans
 
 Plans:
-- [ ] 01-01-skeleton-PLAN.md — Gradle wrapper + version catalog + build-logic convention plugins + 4 KMP-module skeletons
+- [x] 01-01-skeleton-PLAN.md — Gradle wrapper + version catalog + build-logic convention plugins + 4 KMP-module skeletons (completed 2026-04-28)
 - [ ] 01-02-hello-linteh-PLAN.md — expect/actual openUrl + BuildKonfig + Hello LinTech composable + AppTest
 - [ ] 01-03-ci-workflows-PLAN.md — GitHub Actions CI (Android ubuntu-latest + iOS macos-15) + README + manual GitHub UI setup
 - [ ] 01-04-privacy-policy-PLAN.md — Privacy Policy HTML + GitHub Pages auto-deploy
