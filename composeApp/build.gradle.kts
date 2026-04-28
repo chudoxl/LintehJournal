@@ -124,4 +124,16 @@ buildkonfig {
             value = "true",
         )
     }
+    // BL-01 fix: per-variant override — release-сборка получает IS_DEBUG=false.
+    // BuildKonfig документирует defaultConfigs(flavor) как механизм overrides
+    // (https://github.com/yshrsmz/BuildKonfig?tab=readme-ov-file#variant-aware-config).
+    // До Phase 4 у нас только debug+release без flavor'ов — release-override достаточен,
+    // чтобы Kermit/feature-gating не путали production-сборки с debug-сборками.
+    defaultConfigs("release") {
+        buildConfigField(
+            type = BOOLEAN,
+            name = "IS_DEBUG",
+            value = "false",
+        )
+    }
 }
