@@ -43,6 +43,16 @@ kotlin {
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.uiTest)
         }
+        // AppTest не живёт в commonTest, потому что Android JVM unit-test (без Robolectric) валится
+        // с NPE в Compose `RobolectricIdlingStrategy.getHasRobolectricFingerprint`. Тест разделён:
+        //   - iosTest/AppTest.kt — runComposeUiTest на Kotlin/Native (валидируется CI macos-15)
+        //   - androidUnitTest/AppTestAndroid.kt — @RunWith(RobolectricTestRunner::class)
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(libs.robolectric)
+                implementation(libs.androidx.test.ext.junit)
+            }
+        }
     }
 }
 
@@ -64,6 +74,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true  // Robolectric requires Android resources on classpath
     }
 }
 
