@@ -11,6 +11,20 @@ plugins {
     id("lintech-test")
 }
 
+// WR-04 fix: версия code единым Provider'ом — устраняет дублирование между
+// android.defaultConfig.versionCode и BuildKonfig.VERSION_CODE, делает .toInt()
+// crash-safe (toIntOrNull → 1), и переводит exec-вызов на provider-API
+// (configuration-cache friendly путь — re-enable когда Phase 4 включит cache).
+// Triple fallback (D-30): GITHUB_RUN_NUMBER → git rev-list --count HEAD → "1".
+val versionCodeProvider = providers.environmentVariable("GITHUB_RUN_NUMBER")
+    .orElse(
+        providers.exec {
+            commandLine("git", "rev-list", "--count", "HEAD")
+            isIgnoreExitValue = true
+        }.standardOutput.asText.map { it.trim().ifBlank { "1" } }
+    )
+    .map { it.toIntOrNull() ?: 1 }
+
 kotlin {
     androidTarget()
     listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
@@ -81,12 +95,7 @@ android {
         applicationId = "io.github.chudoxl.linteh.journal"
         minSdk = 26
         targetSdk = 35
-        versionCode = (
-            System.getenv("GITHUB_RUN_NUMBER")
-                ?: providers.exec {
-                    commandLine("git", "rev-list", "--count", "HEAD")
-                }.standardOutput.asText.get().trim().ifBlank { "1" }
-            ).toInt()  // D-30: triple fallback (resolution per RESEARCH.md Open Question #5)
+        versionCode = versionCodeProvider.get()  // WR-04: shared provider, см. top-of-file
         versionName = providers.gradleProperty("versionName").get()  // "0.1.0" из gradle.properties
     }
     compileOptions {
@@ -111,12 +120,7 @@ buildkonfig {
         buildConfigField(
             type = STRING,
             name = "VERSION_CODE",
-            value = (
-                System.getenv("GITHUB_RUN_NUMBER")
-                    ?: providers.exec {
-                        commandLine("git", "rev-list", "--count", "HEAD")
-                    }.standardOutput.asText.get().trim().ifBlank { "1" }
-                ),
+            value = versionCodeProvider.get().toString(),  // WR-04: shared provider
         )
         buildConfigField(
             type = BOOLEAN,
