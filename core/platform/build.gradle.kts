@@ -13,9 +13,9 @@ kotlin {
     }
 
     sourceSets {
-        // commonMain — пусто в Phase 1; expect-функция openUrl добавится в Plan 02
-        // androidMain dependencies — Intent.ACTION_VIEW, добавятся в Plan 02:
-        // implementation(libs.androidx.core.ktx)
+        androidMain.dependencies {
+            implementation(libs.androidx.core.ktx)
+        }
     }
 }
 
