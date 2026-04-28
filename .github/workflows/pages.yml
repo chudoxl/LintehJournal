@@ -32,9 +32,11 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Stamp Last-Modified date
-        # BLOCKER 4 mitigation: substitute {{LAST_MODIFIED}} placeholder in HTML footer
-        # с actual date последнего git commit к docs/privacy/index.html.
-        # Дата автоматически обновляется при каждом edit policy без manual touch.
+        # WR-03 fix: source-HTML использует sentinel-default (читаемый «как есть» при
+        # raw view: <span data-stamp="last-modified">текущая разработка...</span>);
+        # этот step заменяет content внутри span'а на actual date последнего git
+        # commit к docs/privacy/index.html. raw view → читаемый текст,
+        # deployed view → конкретная дата.
         # BLOCKER 3 iter 2: requires fetch-depth: 0 above (otherwise `git log -- file` returns empty on shallow checkout).
         run: |
           set -euo pipefail
@@ -45,7 +47,7 @@ jobs:
             exit 1
           fi
           echo "Stamping Last-Modified=${LAST_MODIFIED}"
-          sed -i "s|{{LAST_MODIFIED}}|${LAST_MODIFIED}|g" docs/privacy/index.html
+          sed -i "s|<span data-stamp=\"last-modified\">[^<]*</span>|<span data-stamp=\"last-modified\">${LAST_MODIFIED}</span>|" docs/privacy/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
