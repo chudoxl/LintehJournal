@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Plan 01-01-skeleton complete (multi-module Gradle skeleton + convention plugins)
-last_updated: "2026-04-28T05:54:36.341Z"
-last_activity: 2026-04-28 -- Phase 01 execution started
+last_updated: "2026-04-28T09:34:00.000Z"
+last_activity: 2026-04-28 -- Completed quick task 260428-h55: fix(01) disable NullSafeMutableLiveData lint detector + close UAT items
 progress:
   total_phases: 6
   completed_phases: 1
@@ -80,6 +80,14 @@ None yet.
 
 - **Phase 2 (API Reverse-Engineering)** — самая высокая неопределённость в проекте: закрытый ExtJS-API АВЕРС не документирован, все feature-планы фаз 3+ — гипотезы до завершения mitmproxy-захвата
 - **Phase 6 (iOS BGAppRefreshTask)** — реальная частота недетерминирована, требует measurements на физических устройствах в течение недели
+- **Phase 1 UAT-2 deferred (v2 hardening)** — branch protection «Require conversation resolution» переехала в новый GitHub UI: Settings → Rules → Rulesets. Текущий main без server-side защиты, опираемся на solo-developer workflow + green CI checks
+- **Phase 1 UAT-5 deferred** — Privacy Policy URL HTTP 200 + content checks failed (отдельная проблема, не покрыто quick task 260428-h55)
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260428-h55 | fix(01): disable NullSafeMutableLiveData lint detector + close UAT items | 2026-04-28 | 37fc2c2 | [260428-h55-fix-01-disable-nullsafemutablelivedata-l](./quick/260428-h55-fix-01-disable-nullsafemutablelivedata-l/) |
 
 ## Deferred Items
 
@@ -92,5 +100,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: Plan 01-01-skeleton complete (multi-module Gradle skeleton + convention plugins)
-Resume file: .planning/phases/01-foundation-compliance-infrastructure/01-02-hello-linteh-PLAN.md
+Stopped at: Quick task 260428-h55 complete — Phase 1 UAT closed (5/7 passed, 2 deferred to v2: branch protection Rulesets, Privacy Policy URL content checks). CI Android lint job unblocked. Ready for Phase 2.
+Resume file: (none — proceed to /gsd-discuss-phase 2)
