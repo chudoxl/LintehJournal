@@ -37,9 +37,22 @@ private val androidApplicationContext: Context
     get() = applicationContextHolder
         ?: error("Call initApplicationContext() in Application.onCreate() first")
 
+/**
+ * **WR-01 mitigation:** scheme allowlist (https/http) + defensive parse + ActivityNotFoundException
+ * guard. Phase 1 caller — const URL из strings.xml (Privacy Policy на GitHub Pages), но публичный
+ * `expect fun openUrl(url: String)` доступен из всего проекта. Без allowlist любой downstream
+ * `openUrl(messageText)` со строкой `intent://com.attacker/...` или `tel:` или `content://`
+ * мгновенно становится IPC-injection vector / uncaught crash.
+ *
+ * Симметрично iOS-actual'у, который уже defensive (NSURL.URLWithString returns null для malformed).
+ */
+private val ALLOWED_SCHEMES = setOf("https", "http")
+
 actual fun openUrl(url: String) {
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+    val parsed = runCatching { Uri.parse(url) }.getOrNull() ?: return
+    if (parsed.scheme?.lowercase() !in ALLOWED_SCHEMES) return
+    val intent = Intent(Intent.ACTION_VIEW, parsed).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
-    androidApplicationContext.startActivity(intent)
+    runCatching { androidApplicationContext.startActivity(intent) }
 }
