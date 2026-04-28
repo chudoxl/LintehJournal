@@ -38,7 +38,7 @@ Plans:
 - [x] 01-02-hello-linteh-PLAN.md — expect/actual openUrl + BuildKonfig + Hello LinTech composable + AppTest (completed 2026-04-28)
 - [x] 01-03-ci-workflows-PLAN.md — GitHub Actions CI (Android ubuntu-latest + iOS macos-15) + README + manual GitHub UI setup (completed 2026-04-28; Task 3 manual UI deferred — tracked in HUMAN-UAT)
 - [x] 01-04-privacy-policy-PLAN.md — Privacy Policy HTML + GitHub Pages auto-deploy (completed 2026-04-28; Task 3 live URL check deferred — combined into HUMAN-UAT)
-- [ ] 01-05-privacy-manifest-PLAN.md — PrivacyInfo.xcprivacy + apple-privacy-manifests plugin + CI plutil-lint step
+- [x] 01-05-privacy-manifest-PLAN.md — PrivacyInfo.xcprivacy + apple-privacy-manifests plugin + CI plutil-lint step (completed 2026-04-28)
 - [ ] 01-06-docs-PLAN.md — ROADMAP edit (Linux Mint dev-host) + CLAUDE.md fill + README finalize
 
 **Closes pitfalls:** #15 (SwiftPM с первого дня — не CocoaPods), #16 (CI собирает обе платформы — Android-only deps в commonMain ловятся сразу), #9 (Privacy Manifest заглушка), частично #3 (Privacy Policy опубликована — снимает privacy-ветку юр. риска для personal-use scope)
