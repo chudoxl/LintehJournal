@@ -76,12 +76,22 @@ expected: Browser https://chudoxl.github.io/LintehJournal/privacy/ shows:
 result: [pending]
 location: browser
 
+### 7. Hello LinTech UX smoke test on Android device/emulator (Plan 02 / Phase 1 verification)
+expected: установка debug APK на физическое Android устройство или эмулятор и визуальное подтверждение:
+- App открывается, отображает «ЛИнТех Дневник» (app_title)
+- Версия `v0.1.0 (NN)` (app_version, BuildKonfig)
+- Privacy Policy URL виден (privacy_url)
+- Кнопка «Открыть» работает — открывает URL в системном браузере (после Pages enable URL вернёт 200)
+- Cyrillic читается без mojibake
+result: [pending]
+location: Android device or emulator (`./gradlew :composeApp:installDebug && adb shell am start -n io.github.chudoxl.linteh.journal/.MainActivity`)
+
 ## Summary
 
-total: 6
+total: 7
 passed: 0
 issues: 0
-pending: 6
+pending: 7
 skipped: 0
 blocked: 0
 
