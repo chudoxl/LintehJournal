@@ -209,13 +209,157 @@
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+> Established in Phase 1 (Foundation). All future modules adhere to these patterns.
+
+### Module structure
+
+Convention plugins в `build-logic/` — single source for KMP/Compose/Test boilerplate:
+
+- `lintech-kmp` — applies `org.jetbrains.kotlin.multiplatform` + `com.android.library`; configures KMP targets (android + iosX64 + iosArm64 + iosSimulatorArm64), JDK 17 toolchain, freeCompilerArgs `-Xexpect-actual-classes`, kotlin.test in commonTest.
+- `lintech-compose` — applies `org.jetbrains.compose` + `org.jetbrains.kotlin.plugin.compose` (Kotlin 2.0+ Compose compiler); adds compose.runtime/foundation/material3/components.resources to commonMain.
+- `lintech-test` — applies `dev.mokkery`; adds kotlin.test + kotest.assertions + turbine to commonTest. **NB:** compose.uiTest добавляется отдельно в `:composeApp/build.gradle.kts` commonTest (BLOCKER 1 fix iter 1) — non-UI модули (`:core:platform`, `:core:network`) не должны тянуть compose deps через convention plugin.
+
+Adding a new KMP module — minimum (≤5 строк plugins-блока):
+```kotlin
+plugins {
+    id("lintech-kmp")
+    id("lintech-test")     // если нужны тесты
+    id("lintech-compose")  // если UI-модуль
+}
+```
+
+### Package root
+
+`io.github.chudoxl.linteh.journal.*`. Транслитерация **`linteh`** (НЕ `lintech`) — закреплено в bundle id, package, GitHub Pages URL slug.
+
+Sub-packages module-aligned:
+- `io.github.chudoxl.linteh.journal.core.platform.*` — `:core:platform` module (expect/actual abstractions)
+- `io.github.chudoxl.linteh.journal.core.ui.*` — `:core:ui` module (design tokens, Phase 4)
+- `io.github.chudoxl.linteh.journal.core.network.*` — `:core:network` module (Ktor, Phase 2)
+
+### Versioning
+
+Single source of truth — `gradle/libs.versions.toml` (Gradle 8+ Version Catalog). All plugin/library versions pinned; never use `latest.release` или unbound ranges. Bump versions через explicit PR. Никаких version-литералов в module `build.gradle.kts` — все ссылки через `libs.versions.*` или `libs.plugins.*`.
+
+### expect/actual pattern
+
+Platform abstractions live in `:core:platform`. `commonMain` declares `expect`, `androidMain` + `iosMain` provide `actual`. Phase 1 first example: `openUrl(url: String)` в `core/platform/src/commonMain/kotlin/.../UrlOpener.kt` (плюс `UrlOpener.android.kt` через `Intent.ACTION_VIEW` и `UrlOpener.ios.kt` через `UIApplication.sharedApplication.openURL`).
+
+Future expect/actual targets: KVault wrappers (Phase 3), WorkManager/BGTaskScheduler (Phase 6).
+
+### Tests
+
+UI-tests — `runComposeUiTest { ... }` в commonTest для cross-platform селекций. Selectors через `Modifier.testTag("...")` + `onNodeWithTag("...")` — НЕ текстовые (D-19).
+
+**AppTest split** — Phase 1 запускает Compose UI tests на двух runtime-платформах:
+- **iOS Native** (`composeApp/src/iosTest/`): тест прогоняется через `./gradlew :composeApp:iosX64Test` на CI macos-15 runner-е
+- **Android JVM** (`composeApp/src/androidUnitTest/`): тест прогоняется через `./gradlew :composeApp:test` под Robolectric (`@RunWith(RobolectricTestRunner::class)`); `composeApp/build.gradle.kts` декларирует `testOptions.unitTests.isIncludeAndroidResources = true` + `composeApp/src/debug/AndroidManifest.xml` объявляет `androidx.activity.ComponentActivity` для `ActivityScenario`
+
+iOS-сборки валидируются через `iosX64Test` в CI macos-15 runner — локальный Xcode недоступен на dev-host Linux Mint.
+
+### Build & verification
+
+- Локальный Android: `./gradlew :composeApp:assembleDebug :composeApp:installDebug`
+- Локальный Android JVM tests (под Robolectric): `./gradlew :composeApp:test`
+- Локальный iOS-side compile: `./gradlew :composeApp:compileKotlinIosX64`
+- Full CI suite (mirrors GitHub Actions): `./gradlew assembleDebug lint test` (Android, ubuntu-latest) + `./gradlew :composeApp:iosX64Test` (требует macOS, в CI macos-15)
+- iOS framework link + Privacy Manifest packaging: `./gradlew :composeApp:linkDebugFrameworkIosX64` (только macOS)
+- Privacy Manifest lint (только macOS): `plutil -lint composeApp/PrivacyInfo.xcprivacy`
+
+### Commit hygiene
+
+- Worktree mode (parallel executor): `git commit --no-verify` (skip hooks)
+- Stage files individually — никаких `git add .` или `git add -A`
+- Per-task atomic commits; SUMMARY.md + STATE.md закрываются отдельным `docs(...)` commit
 <!-- GSD:conventions-end -->
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
-Architecture not yet mapped. Follow existing patterns found in the codebase.
+> Mapped in Phase 1 (Foundation). Module skeleton scales for Phases 2-6.
+
+### Multi-module layout
+
+```
+LintehJournal/
+├── composeApp/                      # Single application module (KMP)
+│   ├── src/commonMain/              # @Composable App() — Hello LinTech (Phase 1); future screens (Phase 4-5)
+│   ├── src/androidMain/             # MainActivity + MainApplication
+│   ├── src/iosMain/                 # MainViewController
+│   ├── src/iosTest/                 # Compose UI tests on iOS Native (iosX64Test)
+│   ├── src/androidUnitTest/         # Compose UI tests on Android JVM (Robolectric)
+│   ├── src/debug/AndroidManifest.xml  # ComponentActivity host для ActivityScenario в Robolectric
+│   └── PrivacyInfo.xcprivacy        # iOS Privacy Manifest (CA92.1 + C617.1)
+├── core/
+│   ├── platform/                    # expect/actual abstractions (openUrl Phase 1; KVault Phase 3; BGTaskScheduler Phase 6)
+│   ├── ui/                          # Design tokens, OfflineBanner, staleness indicators (Phase 4)
+│   └── network/                     # Ktor HttpClientFactory, AVERS API contracts (Phase 2)
+├── build-logic/                     # Convention plugins (includedBuild — НЕ buildSrc)
+│   └── convention/
+│       └── src/main/kotlin/
+│           ├── LintechKmpConventionPlugin.kt
+│           ├── LintechComposeConventionPlugin.kt
+│           ├── LintechTestConventionPlugin.kt
+│           └── ext/{KotlinExt.kt, AndroidExt.kt}
+├── docs/                            # GitHub Pages source
+│   ├── index.html                   # Root landing
+│   └── privacy/index.html           # Privacy Policy (RU custom)
+├── gradle/libs.versions.toml        # Single source of truth — все pinned versions
+└── .github/workflows/
+    ├── ci.yml                       # Android + iOS CI on push/PR
+    └── pages.yml                    # Privacy Policy auto-deploy
+```
+
+Future modules (Phase 3+):
+- `:core:domain` — domain models, business logic
+- `:core:data` — repositories, data sources
+- `:core:database` — Room KMP, per-account DBs (`journal_${accountId}.db`)
+- `:feature:auth`, `:feature:grades`, etc. — feature-by-layer
+
+### Source set hierarchy
+
+Каждый KMP-модуль использует `applyDefaultHierarchyTemplate=true` (gradle.properties). Source sets:
+- `commonMain` / `commonTest` — shared code
+- `androidMain` / `androidUnitTest` (JVM tests, под Robolectric для Compose UI tests)
+- `iosMain` / `iosTest` (Native iOS X64/Arm64/SimulatorArm64)
+
+`composeApp` имеет дополнительный `src/debug/AndroidManifest.xml` для declared `ComponentActivity` (требуется `ActivityScenario` в Robolectric-based AppTestAndroid). Manifest layering: `src/main/AndroidManifest.xml` → application с launcher; `src/debug/AndroidManifest.xml` дополняет debug variant ComponentActivity-host.
+
+### Dependency rules (D-07)
+
+Слои вниз: `:composeApp` → `:feature:*` → `:core:ui` → `:core:network` → `:core:platform`. Enforce через PR-review до Phase 5; build-time enforcement (gradle-modules-graph plugin) — после Phase 5 когда модулей >10.
+
+### iOS integration
+
+Через **SwiftPM XCFramework** (НЕ CocoaPods — pitfall #15 closed in Phase 1). `:composeApp` exports `ComposeApp.framework` через `binaries.framework { isStatic = true }`. iOS app в `iosApp/` импортирует через standard Xcode build phase `embedAndSignAppleFrameworkForXcode` — задача активируется в Phase 6 при подготовке к TestFlight.
+
+Phase 1 валидирует iOS-side через `iosX64Test` в CI macos-15. Полный xcodebuild — Phase 6.
+
+### Build infrastructure
+
+- **Gradle 8.13** (wrapper) — kotlin-dsl с Kotlin 2.0.21 для совместимости с Compose Gradle Plugin 1.10.3 binary metadata (Kotlin 2.1.0+)
+- **Kotlin 2.2.20** + **Compose Multiplatform 1.10.3** + **AGP 8.7.3** + **JDK 17** toolchain
+- **BuildKonfig 0.15.2** (`com.codingfeline.buildkonfig`) применён в `:composeApp` — генерирует `io.github.chudoxl.linteh.journal.BuildKonfig` (VERSION_NAME / VERSION_CODE / IS_DEBUG); D-29 application module owns versioning
+- **Mokkery 2.10.2** — KMP-friendly mocks (заменяет MockK на iOS-таргетах; Kotlin 2.2.20-compatible)
+- **Robolectric 4.14.1** + `androidx.test.ext:junit 1.2.1` — Compose UI tests на Android JVM
+- **apple-privacy-manifests 1.0.0** plugin — упаковывает `PrivacyInfo.xcprivacy` в iOS framework (`privacyManifest { embed(...) }` блок ВНУТРИ `kotlin { }` scope)
+- **Root build.gradle.kts** применяет ВСЕ used plugins через `alias(...) apply false` (Now in Android pattern) — convention plugins вызывают `pluginManager.apply("...")` без classpath гимнастики
+
+### CI infrastructure
+
+- **`.github/workflows/ci.yml`** — два параллельных job:
+  - Android (ubuntu-latest): `./gradlew assembleDebug lint test`
+  - iOS (macos-15): `./gradlew :composeApp:iosX64Test` + `linkDebugFrameworkIosX64` + 5-step `plutil` lint chain
+- **`.github/workflows/pages.yml`** — auto-deploy `docs/` на GitHub Pages с авто-датированием footer (sed substitution из `git log -1 --format=%cs`)
+- **Branch protection** на `main` требует green Android + iOS jobs (manual GitHub UI step — tracked in `01-HUMAN-UAT.md`)
+
+### Privacy & compliance
+
+- **Privacy Policy:** `https://chudoxl.github.io/LintehJournal/privacy/` (deployed via GitHub Pages from `docs/privacy/index.html` — RU custom-written, on-device semantics)
+- **iOS Privacy Manifest:** `composeApp/PrivacyInfo.xcprivacy` упаковывается через `org.jetbrains.kotlin.apple-privacy-manifests:1.0.0` plugin; CI lint `plutil -lint` + grep на macos-15 — regression-protect для CA92.1 / C617.1 / NSPrivacyTracking=false / NSPrivacyCollectedDataTypes=[]
+- **PrivacyInfo deferred reason codes (Phase 6 reactive):** Phase 1 декларирует CA92.1 + C617.1. При первом TestFlight upload в Phase 6 могут потребоваться дополнительные reason codes (fstat 0A2A.1, mach_absolute_time 35F9.1) — JetBrains issue #4738. App Store Connect reject ITMS-91053 = sign to extend; добавление этих codes — single-source edit `composeApp/PrivacyInfo.xcprivacy` + регенерация CI lint expected-list.
+- **Per-account scope (Phase 5+):** отдельный файл БД на каждый аккаунт; cross-account leak prevention как архитектурный инвариант
+- **v2 deferred:** публичный submission в App Store / Google Play, формальная регистрация в РКН, письменное согласие школы №28 — отложены при подготовке к публичному релизу
 <!-- GSD:architecture-end -->
 
 <!-- GSD:skills-start source:skills/ -->
