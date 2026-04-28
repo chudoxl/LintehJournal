@@ -11,9 +11,18 @@
 
 ## Status
 
-Pre-alpha. Phase 1 (Foundation & Compliance Infrastructure).
+**Phase 1 (Foundation & Compliance Infrastructure): COMPLETE**
 
-Distribution v1 — TestFlight (iOS) + Google Play Internal track (Android) для семейного/классного использования.
+- Multi-module Gradle skeleton (`:composeApp` + `:core:platform` / `:core:ui` / `:core:network` + `build-logic/`)
+- Convention plugins (`lintech-kmp`, `lintech-compose`, `lintech-test`) — adding new module = ≤5 строк plugins-блока
+- GitHub Actions CI: Android (ubuntu-latest) + iOS (macos-15) на каждый push/PR
+- Privacy Policy опубликована: <https://chudoxl.github.io/LintehJournal/privacy/>
+- iOS `PrivacyInfo.xcprivacy` с required-reason API + CI lint regression-protect
+- Hello LinTech composable как первый working экран (Android-side runs локально; iOS-side validates через CI `iosX64Test`)
+
+Distribution v1 — TestFlight (iOS) + Google Play Internal track (Android) для семейного/классного использования. Public submission и formal legal compliance — отложены в v2.
+
+**Next: Phase 2 — API Reverse-Engineering & Network Layer.**
 
 ## Privacy Policy
 
@@ -21,6 +30,8 @@ Distribution v1 — TestFlight (iOS) + Google Play Internal track (Android) дл
 
 Приложение не отправляет данные третьим лицам, не использует аналитику, не имеет рекламы.
 Все учётные данные хранятся локально в платформенном защищённом хранилище (iOS Keychain, Android Keystore).
+
+iOS-сборка содержит `PrivacyInfo.xcprivacy` с required-reason API declarations (`NSPrivacyAccessedAPICategoryUserDefaults` CA92.1, `NSPrivacyAccessedAPICategoryFileTimestamp` C617.1), `NSPrivacyTracking=false`, `NSPrivacyCollectedDataTypes=[]` — упаковывается автоматически через `org.jetbrains.kotlin.apple-privacy-manifests:1.0.0` plugin. CI lint (`plutil -lint` + grep на macos-15) предотвращает регрессии.
 
 ## Tech Stack
 
