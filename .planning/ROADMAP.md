@@ -48,7 +48,7 @@ Plans:
 **Depends on**: Phase 1
 **Requirements**: (нет — infrastructure для всех последующих фаз; самая высокая неопределённость в проекте — закрытый ExtJS-API без публичной документации)
 **Success Criteria** (what must be TRUE):
-  1. В репозитории лежат HAR-snapshots реальных запросов АВЕРС (login, оценки, расписание, ДЗ, посещаемость, сообщения) — захваченные через mitmproxy для `journal.school28-kirov.ru`
+  1. В репозитории лежат HAR-snapshots реальных запросов АВЕРС (login, оценки, расписание, ДЗ, посещаемость, сообщения) — захваченные через **Chrome DevTools** для `journal.school28-kirov.ru` (D-02 correction: dev-host = Linux Mint; Chrome DevTools HAR-export проще mitmproxy, mobile UA divergence риск задокументирован и митигируется параметризованным UA в `HttpClientFactory` + первым реальным Android-run в Phase 4)
   2. Документ `aversApiV4_23813.md` описывает: login flow (cookie/CSRF), формат ответов (ExtJS `{success, data}` или прямой), endpoint-карту, anti-bot пороги, выяснено отдаются ли «замены», прикреплённые файлы ДЗ и веса оценок
   3. `HttpClientFactory.forAccount(id)` возвращает Ktor-клиент c persistent cookies в Room-таблице, UA mimic Mobile Safari, throttling и retry — повторяет реальный login против тестового аккаунта без срабатывания CAPTCHA
   4. Canary-endpoint при старте приложения сравнивает ответ с эталоном; remote kill-switch (статический JSON на CDN) умеет показать пользователю баннер «обновите приложение»
