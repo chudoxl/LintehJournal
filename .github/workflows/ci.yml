@@ -67,8 +67,17 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_16.app || sudo xcode-select -s /Applications/Xcode_16.0.app || echo "Using default Xcode"
 
       - name: Verify Xcode version
-        # Явная проверка какой Xcode выбран — fail clearly если default не подходит.
-        run: xcodebuild -version | head -1
+        # BL-03 fix: реальный gate (не информационный). Если xcode-select fallback
+        # выбрал не-Xcode-16 (default macos-15 image, или Xcode_16.app отсутствует),
+        # `Verify` шаг fail-ит CI с понятным сообщением. Это закрывает Pitfall #4
+        # mitigation, который ранее сам себя не закрывал — `head -1` всегда exit 0,
+        # никаких assertion на major version не выполнялось.
+        run: |
+          set -euo pipefail
+          XCODE_VERSION=$(xcodebuild -version | head -1)
+          echo "Active Xcode: $XCODE_VERSION"
+          echo "$XCODE_VERSION" | grep -qE '^Xcode 16\.' \
+            || { echo "ERROR: expected Xcode 16.x, got '$XCODE_VERSION' (xcode-select fallback chose wrong toolchain)"; exit 1; }
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
