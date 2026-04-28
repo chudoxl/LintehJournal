@@ -1358,27 +1358,33 @@ Planner should include this STRIDE-lite skeleton for any PLAN that touches netwo
 
 **These assumptions are flagged for the planner to either confirm or refine via additional discuss-phase question. None block planning — fall-back paths exist for every one.**
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact AVERS endpoint URLs and parameter names** — completely unknown until Phase 2 HAR capture (Plan task 1). Researcher cannot pre-write `httpClient.get("/api/grades")`-style code; final endpoint paths emerge from HAR replay.
    - What we know: hostname `journal.school28-kirov.ru`, build 23813
    - What's unclear: every URL path, every parameter name
    - Recommendation: Plan **Task 1** = HAR capture + `aversApiV4_23813.md` documentation. **Task N** (after capture) = endpoint code matching observed shapes. Don't try to write endpoint code before capture.
+   - **RESOLVED:** deferred to runtime — Plan 02-02 (HAR capture) produces the URLs; Plans 02-06 (endpoint contract code) and 02-08 (`docs/aversApiV4_23813.md`) consume them downstream. No pre-implementation answer possible.
 
 2. **Whether AVERS issues a CSRF token (form-field or header)** — common in ExtJS, but speculative.
    - Recommendation: First HAR capture answers this. If yes, add CSRF interceptor to plugin chain or hand-stitch in `:core:api-avers-v4`.
+   - **RESOLVED:** deferred to runtime — Plan 02-02 captures CSRF presence; Plan 02-04 (HttpClientFactory) adds interceptor only if observed. Plan 02-08 §Login flow documents the result.
 
 3. **Whether AVERS uses POST or GET for login** — passwords in GET would be a major security signal but not unheard of in legacy.
    - Recommendation: Capture answers this; redactor handles both query and body.
+   - **RESOLVED:** deferred to runtime — Plan 02-02 captures login HTTP method; redactor (Plan 02-01) already handles both query and body, so either form is safe. Plan 02-08 §Login flow documents the observed method.
 
 4. **Should Koin DI be wired in Phase 2 or deferred?** — STACK.md locks Koin 4.x but timing not zafiksirovan (CONTEXT discretion item).
    - Recommendation: **DEFER to Phase 3.** Phase 2 has only one factory + one dao. Manual constructor wiring (in tests + a `:composeApp` `Phase2WiringSample.kt`-stub) is sufficient. Koin scope-management value ramps with multi-account in Phase 3-5. Adding Koin in Phase 2 = build-time tax for unclear value.
+   - **RESOLVED:** Koin deferred to Phase 3 (Auth) per researcher's recommendation. Phase 2 uses manual constructor wiring; no plan introduces Koin.
 
 5. **NetworkMonitor expect/actual — needed in Phase 2?** — D-19 says deferred to Phase 4.
    - Recommendation: **DEFER.** Phase 2 has no offline-first observation use-case. Ktor exception → AversApiError.Network already covers detection at request-time.
+   - **RESOLVED:** NetworkMonitor deferred to Phase 4 per D-19. Phase 2 maps Ktor IO exceptions to `AversApiError.Network` in plan 02-06.
 
 6. **D-11 vs D-06 AntiBotChallenge payload shape** (raised as A10 above)
    - Recommendation: planner adjusts D-11 from `object AntiBotChallenge` → `data class AntiBotChallenge(val rawHtml: String)` (sealed superset; no API breakage). Document in plan as clarification.
+   - **RESOLVED:** planner adopted `data class AntiBotChallenge(val rawHtml: String)` — locked in plan 02-06 (`AversApiError.AntiBotChallenge`) with reconciliation note in plan body. Plan 02-08 §Anti-bot signals documents the chosen shape.
 
 ## State of the Art
 

@@ -53,7 +53,36 @@ Plans:
   3. `HttpClientFactory.forAccount(id)` возвращает Ktor-клиент c persistent cookies в Room-таблице, UA mimic Mobile Safari, throttling и retry — повторяет реальный login против тестового аккаунта без срабатывания CAPTCHA
   4. Canary-endpoint при старте приложения сравнивает ответ с эталоном; remote kill-switch (статический JSON на CDN) умеет показать пользователю баннер «обновите приложение»
   5. Логирование запросов — `LogLevel.NONE` в release, `sanitizeHeader` для Authorization/Cookie, canary-test «kanareyka_PASSWORD_DO_NOT_LEAK_42» в CI не находит совпадений в логах
-**Plans**: TBD
+**Plans:** 9 plans
+
+Plans:
+
+**Wave 1** *(parallelisable; Plan 02 is `autonomous: false` — manual HAR capture)*
+- [ ] 02-01-PLAN.md — Gradle deps + `:core:database`+`:core:api-avers-v4` skeletons + sanitize-har tooling + log-redactor canary + ROADMAP edit (mitmproxy → Chrome DevTools)
+- [ ] 02-02-PLAN.md — HAR captures (account-A + account-B × 6 endpoints, 12 sanitized fixtures)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 02-03-PLAN.md — Room JournalDatabase + DatabaseFactory + Cookie schema v1 + iOS NSFileProtectionComplete
+- [ ] 02-04-PLAN.md — HttpClientFactory + plugin chain + HttpRequestRedactor + AversAuthInterceptor + CredentialProvider
+
+**Wave 3** *(blocked on Wave 2)*
+- [ ] 02-05-PLAN.md — RoomCookiesStorage + CookieMapper + AccountDataPurger
+
+**Wave 4** *(blocked on Wave 3)*
+- [ ] 02-06-PLAN.md — `:core:api-avers-v4` DTOs + ApiResult + AversApiError + 6-endpoint contract tests via HAR replay
+
+**Wave 5** *(parallelisable; both blocked on Wave 4)*
+- [ ] 02-07-PLAN.md — KillSwitchClient + docs/api-config.json (GitHub Pages-deployed)
+- [ ] 02-09-PLAN.md — CI iOS test invocations (`:core:database/network/api-avers-v4:iosX64Test`) + canary scripts wired + iOS Native HAR resource loading
+
+**Wave 6** *(blocked on Waves 4 & 5)*
+- [ ] 02-08-PLAN.md — docs/aversApiV4_23813.md (API contract narrative) + changelog + tools/manual-smoke.sh
+
+**Cross-cutting constraints** (truths appearing in 2+ plans — executor MUST preserve across waves):
+- HttpRequestRedactor canary `kanareyka_PASSWORD_DO_NOT_LEAK_42` greps clean in BOTH debug and release builds (D-28; introduced in 02-01, validated in 02-04 / 02-09)
+- Single source of truth versions in `gradle/libs.versions.toml` — no version literals in module `build.gradle.kts` (D-02; entrenched 02-01, respected by 02-03..09)
+- Per-account scope invariant — `journal_${accountId}.db` filename pattern + cookies scoped per-account (D-15..18; created 02-03, consumed 02-04 / 02-05)
+- `core/api-avers-v4/build.gradle.kts` — `fixtures.dir` system property must be passed to ALL Test tasks (Android JVM AND iOS Native); landed in 02-06, extended to iOS in 02-09
 
 **Closes pitfalls:** #2 (API fragility — versioned `aversApiV4_23813` модуль + canary + remote kill-switch + HAR-snapshot тесты), #11 (anti-bot — UA mimic, throttling, retry-after, WebView fallback за feature flag), #19 (SSL — system trust, no pinning), #5 (logging hygiene — sanitizeHeader + redactor + canary-test)
 
