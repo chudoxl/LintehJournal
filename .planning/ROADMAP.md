@@ -58,7 +58,7 @@ Plans:
 Plans:
 
 **Wave 1** *(parallelisable; Plan 02 is `autonomous: false` — manual HAR capture)*
-- [ ] 02-01-PLAN.md — Gradle deps + `:core:database`+`:core:api-avers-v4` skeletons + sanitize-har tooling + log-redactor canary + ROADMAP edit (mitmproxy → Chrome DevTools)
+- [x] 02-01-PLAN.md — Gradle deps + `:core:database`+`:core:api-avers-v4` skeletons + sanitize-har tooling + log-redactor canary + ROADMAP edit (mitmproxy → Chrome DevTools)
 - [ ] 02-02-PLAN.md — HAR captures (account-A + account-B × 6 endpoints, 12 sanitized fixtures)
 
 **Wave 2** *(blocked on Wave 1 completion)*
