@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlinComposeCompiler)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.buildkonfig)
+    alias(libs.plugins.applePrivacyManifests)
     id("lintech-test")
 }
 
@@ -53,6 +54,23 @@ kotlin {
                 implementation(libs.androidx.test.ext.junit)
             }
         }
+    }
+
+    // D-25 + COMP-02: PrivacyInfo.xcprivacy is embedded into iOS framework via the
+    // official JetBrains apple-privacy-manifests plugin (RESEARCH "Где упаковывается в .ipa";
+    // Pitfall #2 mitigation — единственный officially-supported путь).
+    // Plugin копирует composeApp/PrivacyInfo.xcprivacy в
+    // Frameworks/ComposeApp.framework/PrivacyInfo.xcprivacy при сборке Apple framework.
+    //
+    // NOTE (Rule 3 deviation, Plan 05 Task 2): apple-privacy-manifests plugin v1.0.0
+    // регистрирует extension на KotlinMultiplatformExtension, а не на top-level Project.
+    // План указывал размещение блока на top-level (между kotlin{} и android{}), но это
+    // вызывает "Unresolved reference: privacyManifest". Корректное место — внутри
+    // kotlin { ... } scope.
+    privacyManifest {
+        embed(
+            privacyManifest = layout.projectDirectory.file("PrivacyInfo.xcprivacy").asFile,
+        )
     }
 }
 
