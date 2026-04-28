@@ -38,3 +38,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Phase 2 — HAR fixtures (D-04)
+fixtures/raw/
+.env.local

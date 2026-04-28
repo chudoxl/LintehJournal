@@ -3,11 +3,15 @@ kotlin = "2.2.20"
 ksp = "2.2.20-2.0.4"
 composeMultiplatform = "1.10.3"
 agp = "8.7.3"
-# NOTE: kotlinx-serialization 1.7.3 + datetime 0.6.2 — Phase 1 baseline (не используется в Phase 1).
-# CLAUDE.md рекомендует 1.9.0 / 0.8.0-rc01; Phase 2 planner re-evaluates когда Ktor + JSON intergrated.
-kotlinxSerialization = "1.7.3"
-kotlinxDatetime = "0.6.2"
+# NOTE: kotlinx-serialization + datetime — Phase 2 bump (was 1.7.3 / 0.6.2 in Phase 1).
+# Required by Ktor 3.4.x (kotlinx-serialization >= 1.9 — see CLAUDE.md Version Compatibility table)
+# and kotlinx-datetime 0.8 Instant serialization which depends on kotlinx-serialization 1.9.0+.
+kotlinxSerialization = "1.9.0"
+kotlinxDatetime = "0.8.0-rc01"
 kotlinxCoroutines = "1.10.2"
+ktor = "3.4.3"
+room = "2.8.4"
+sqlite = "2.6.2"
 androidxLifecycleViewModel = "2.10.0"
 androidxNavigation3 = "1.0.0-alpha08"
 androidxActivityCompose = "1.9.3"
@@ -38,6 +42,25 @@ androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecy
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+
+# Ktor (commonMain — Phase 2)
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+
+# Ktor engines (platform-specific)
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+
+# Ktor (commonTest)
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+
+# Room KMP (commonMain — Phase 2)
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 
@@ -58,3 +81,4 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 applePrivacyManifests = { id = "org.jetbrains.kotlin.apple-privacy-manifests", version.ref = "applePrivacyManifests" }
+androidxRoom = { id = "androidx.room", version.ref = "room" }
