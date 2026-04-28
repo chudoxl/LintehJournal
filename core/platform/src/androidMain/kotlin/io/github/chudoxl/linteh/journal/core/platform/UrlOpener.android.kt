@@ -3,6 +3,7 @@ package io.github.chudoxl.linteh.journal.core.platform
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import co.touchlab.kermit.Logger
 
 /**
  * Контекст пробрасывается через инкапсулированный private holder в Phase 1 — pragmatic
@@ -47,12 +48,20 @@ private val androidApplicationContext: Context
  * Симметрично iOS-actual'у, который уже defensive (NSURL.URLWithString returns null для malformed).
  */
 private val ALLOWED_SCHEMES = setOf("https", "http")
+private const val TAG = "UrlOpener"
 
 actual fun openUrl(url: String) {
-    val parsed = runCatching { Uri.parse(url) }.getOrNull() ?: return
-    if (parsed.scheme?.lowercase() !in ALLOWED_SCHEMES) return
+    val parsed = runCatching { Uri.parse(url) }.getOrNull() ?: run {
+        Logger.w(TAG) { "Invalid URL, skipping openUrl: $url" }
+        return
+    }
+    if (parsed.scheme?.lowercase() !in ALLOWED_SCHEMES) {
+        Logger.w(TAG) { "Scheme not in allowlist (${ALLOWED_SCHEMES}), skipping: $url" }
+        return
+    }
     val intent = Intent(Intent.ACTION_VIEW, parsed).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     runCatching { androidApplicationContext.startActivity(intent) }
+        .onFailure { Logger.w(TAG, it) { "startActivity failed for: $url" } }
 }
