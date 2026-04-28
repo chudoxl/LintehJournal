@@ -77,3 +77,44 @@ jobs:
 
       - name: Run iOS X64 tests
         run: ./gradlew :composeApp:iosX64Test
+
+      - name: Link iOS X64 debug framework (verify privacyManifest plugin)
+        # Plan 05 Task 3: BLOCKER 1 iter 2 mitigation — targeted insertion ПОСЛЕ
+        # существующего "Run iOS X64 tests" step. Plan 03 структура (Android job
+        # без Test step; Select Xcode 16 без continue-on-error; Verify Xcode version
+        # present) — НЕ trogать.
+        # Pitfall #2 closer: linkDebugFrameworkIosX64 запускает apple-privacy-manifests
+        # plugin, который должен скопировать composeApp/PrivacyInfo.xcprivacy в
+        # composeApp/build/bin/iosX64/debugFramework/composeApp.framework/PrivacyInfo.xcprivacy.
+        run: ./gradlew :composeApp:linkDebugFrameworkIosX64
+
+      - name: Lint PrivacyInfo.xcprivacy
+        # D-26 CI lint: plutil -lint + grep CA92.1 + C617.1 + NSPrivacyTracking=false.
+        # PLIST path = framework-embedded copy (integration check, что plugin
+        # действительно упаковал manifest). Pitfall #3 mitigation: step размещён
+        # ТОЛЬКО в jobs.ios.steps (plutil = macOS-only).
+        run: |
+          set -euo pipefail
+          PLIST=composeApp/build/bin/iosX64/debugFramework/composeApp.framework/PrivacyInfo.xcprivacy
+
+          echo "Step 1: plutil -lint (XML/plist syntax)"
+          plutil -lint "$PLIST"
+
+          echo "Step 2: verify reason code CA92.1 (NSPrivacyAccessedAPICategoryUserDefaults)"
+          plutil -extract NSPrivacyAccessedAPITypes xml1 "$PLIST" -o - | grep -q 'CA92.1' \
+            || (echo "ERROR: CA92.1 (NSPrivacyAccessedAPICategoryUserDefaults reason) missing" && exit 1)
+
+          echo "Step 3: verify reason code C617.1 (NSPrivacyAccessedAPICategoryFileTimestamp)"
+          plutil -extract NSPrivacyAccessedAPITypes xml1 "$PLIST" -o - | grep -q 'C617.1' \
+            || (echo "ERROR: C617.1 (NSPrivacyAccessedAPICategoryFileTimestamp reason) missing" && exit 1)
+
+          echo "Step 4: verify NSPrivacyTracking=false"
+          plutil -extract NSPrivacyTracking raw "$PLIST" | grep -q '^false$' \
+            || (echo "ERROR: NSPrivacyTracking must be false (T-01-03 mitigation)" && exit 1)
+
+          echo "Step 5: verify NSPrivacyCollectedDataTypes is array (empty)"
+          COLLECTED=$(plutil -extract NSPrivacyCollectedDataTypes xml1 "$PLIST" -o -)
+          echo "$COLLECTED" | grep -qE '<array(/| )' \
+            || (echo "ERROR: NSPrivacyCollectedDataTypes must be an array (empty)" && exit 1)
+
+          echo "PrivacyInfo.xcprivacy passes all required-reason checks."
