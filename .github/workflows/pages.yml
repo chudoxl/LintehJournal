@@ -34,7 +34,7 @@ jobs:
       - name: Stamp Last-Modified date
         # WR-03 fix: source-HTML использует sentinel-default (читаемый «как есть» при
         # raw view: <span data-stamp="last-modified">текущая разработка...</span>);
-        # этот step заменяет content внутри span'а на actual date последнего git
+        # этот step заменяет content  внутри span'а на actual date последнего git
         # commit к docs/privacy/index.html. raw view → читаемый текст,
         # deployed view → конкретная дата.
         # BLOCKER 3 iter 2: requires fetch-depth: 0 above (otherwise `git log -- file` returns empty on shallow checkout).
