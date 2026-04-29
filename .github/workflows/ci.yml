@@ -100,7 +100,18 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Run iOS X64 tests
-        run: ./gradlew :composeApp:iosX64Test
+        # Plan 09: extend the Phase 1 single-target invocation to cover all four KMP
+        # modules with iOS Native tests. Concatenated into one gradle call for
+        # daemon + Gradle config-cache + KSP klib cache reuse (~180s estimated
+        # baseline → 4 separate steps would 4x cold-start overhead).
+        # Order: leaf modules first (:core:database, :core:network) so failures
+        # point at the closest cause; :core:api-avers-v4 next (consumes both via
+        # type-only imports / Gradle project deps); :composeApp last as the
+        # Phase 1 integration smoke entry-point.
+        # Plan 09 Task 1 (Native HAR loader + FIXTURES_DIR env-var wiring) is what
+        # makes :core:api-avers-v4:iosX64Test viable here — the 12 EndpointsContract
+        # tests now run on iOS Native too (D-25: never live AVERS, sanitized HAR only).
+        run: ./gradlew :core:database:iosX64Test :core:network:iosX64Test :core:api-avers-v4:iosX64Test :composeApp:iosX64Test
 
       - name: Link iOS X64 debug framework (verify privacyManifest plugin)
         # Plan 05 Task 3: BLOCKER 1 iter 2 mitigation — targeted insertion ПОСЛЕ
