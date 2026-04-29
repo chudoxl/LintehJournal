@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Phase 02 plan 02-02 complete (programmatic HAR capture). 12 sanitized HAR fixtures committed (6 endpoints × 2 accounts) cross-account proof: A user_id=3020 cls=1013, B user_id=2684 cls=1015. Auth mechanism reverse-engineered: ys-user/ys-password/ys-userId client-set cookies via Ext.state.CookieProvider, JS escape() polyfill required for Cyrillic logins. Plan 02-02 SUMMARY documents API contract for Plan 06."
-last_updated: "2026-04-29T08:30:00.000Z"
-last_activity: 2026-04-29 -- Phase 02 plan 02-02 complete (programmatic HAR capture)
+stopped_at: "Phase 02 Wave 2 complete (parallel worktree execution). Plan 02-03 :core:database (JournalDatabase v1 cookies-only schema, per-account file `journal_${accountId}.db`, CookieEntity+CookieDao+DatabaseFactory expect/actual, ApplicationContextProvider exposed from :core:platform/androidMain). Plan 02-04 :core:network (HttpClientFactory.forAccount/evict per-account-cached HttpClient, AversAuthInterceptor scaffold, HttpRequestRedactor scrubs ys-* cookies + l/p login params from Kermit logs). Both modules assemble + tests pass on Android JVM and iOS-side compile. Ktor downgraded 3.4.3 → 3.3.3 (3.4.x requires Kotlin 2.3.0 which breaks Compose 1.10.3 binary metadata)."
+last_updated: "2026-04-29T09:30:00.000Z"
+last_activity: 2026-04-29 -- Phase 02 Wave 2 complete (plans 02-03, 02-04 merged from worktrees)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 8
-  percent: 53
+  completed_plans: 10
+  percent: 67
 ---
 
 # Project State
@@ -25,32 +25,32 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 ## Current Position
 
-Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 1 partial; 02-03..02-09 pending)
-Plans: 2 of 9 (02-01 ✓, 02-02 ✓; 02-03..02-09 pending)
-Status: Ready for next plan (02-03)
-Last activity: 2026-04-29 -- Phase 02 plan 02-02 complete (programmatic HAR capture)
+Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 2 done; 02-05..02-09 pending)
+Plans: 4 of 9 (02-01 ✓, 02-02 ✓, 02-03 ✓, 02-04 ✓; 02-05..02-09 pending)
+Status: Ready for Wave 3 (Plan 02-05 RoomCookiesStorage + AccountDataPurger)
+Last activity: 2026-04-29 -- Phase 02 Wave 2 complete (plans 02-03, 02-04 merged from worktrees)
 
-Progress: [███░░░░░░░] 22% (1/6 phases shipped, Phase 02 2/9 plans done)
+Progress: [████░░░░░░] 36% (1/6 phases shipped, Phase 02 4/9 plans done)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 2
-- Average duration: ~30 min
-- Total execution time: ~1 hour
+- Total plans completed: 4
+- Average duration: ~30 min (executor agents)
+- Total execution time: ~3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 1 | 15 min | 15 min |
-| 2 | 1 | 45 min | 45 min |
+| 2 | 3 | ~115 min | ~38 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01-skeleton (15 min), 02-02-har-capture (45 min programmatic — replaced manual checkpoint)
-- Trend: baseline (extra time on 02-02 due to discovering ys-* cookie auth + JS escape polyfill)
+- 02-01-skeleton (15 min) → 02-02-har-capture (45 min programmatic) → Wave 2 parallel: 02-03-room (50 min) + 02-04-network (21 min) [worktree-isolated, ~50 min wall-time]
+- Trend: parallel waves halve wall-time; 02-04 was fastest because Plan 01 had pre-staged libs.versions.toml entries
 
 *Updated after each plan completion*
 
@@ -71,6 +71,8 @@ Recent decisions affecting current work:
 - AVERS auth = client-set cookies (`ys-user`/`ys-password`/`ys-userId`) via Ext.state.CookieProvider — server never issues Set-Cookie; cookie values use JS escape() with `%uXXXX` for codepoints ≥256 (mandatory for Cyrillic logins)
 - AVERS responses are NOT strict JSON (contain `new Date(YYYY,MM,DD,...)` literals) — Plan 06 client must pre-process response text or implement tolerant parser
 - Plan 02-02 retroactively flipped `autonomous: true` — programmatic capture replaces manual Chrome DevTools (12 sanitized fixtures committed; auth + 6 endpoint contracts derived from `site/client/*.js`)
+- Ktor pinned at 3.3.3 (downgraded from 3.4.3 in Plan 02-04 merge) — 3.4.x requires Kotlin 2.3.0 which breaks Compose Multiplatform 1.10.3 binary metadata. Plans 02-05/02-06 must target 3.3.3.
+- :core:platform Android `applicationContextHolder` visibility lifted private→internal so `ApplicationContextProvider.kt` (also in androidMain) can read it — preserves BL-02 mutability discipline at module level (Plan 02-03 D-19)
 
 ### Pending Todos
 
@@ -104,5 +106,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-29
-Stopped at: Plan 02-02 complete via programmatic capture. 12 sanitized HAR fixtures committed. Auth mechanism + 6 endpoint contracts documented in 02-02-SUMMARY.md for downstream Plan 06 (`:core:api-avers-v4`) consumption.
-Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-02-SUMMARY.md (Plan 06 must read API contract section before building HttpClient + endpoint DTOs)
+Stopped at: Wave 2 complete (parallel worktree execution). Plans 02-03 (Room) + 02-04 (HttpClient) merged. Both modules assemble + test cleanly on Android JVM (`./gradlew :core:database:test :core:network:test` pass) and iOS-side compile pass. Ktor downgraded to 3.3.3 (downstream waves must use this).
+Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-03-SUMMARY.md + 02-04-SUMMARY.md (Plan 02-05 must read both — depends on [03, 04])
