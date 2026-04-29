@@ -47,6 +47,21 @@ jobs:
       - name: Run Android JVM tests (debug)
         run: ./gradlew testDebugUnitTest
 
+      # Plan 09: sanitize-har-canary — fails CI if any non-approved Russian surname
+      # leaks into committed fixtures/sanitized/. Plan 01 created the script;
+      # Plan 02 populated fixtures/sanitized/account-{A,B}/*.har; Plan 09 wires
+      # the gate so every push validates that no real PII slipped through the
+      # tools/sanitize-har.py NAME_POOL substitution (Pitfall #1 closer — D-03/D-04).
+      - name: Run sanitize-har canary
+        run: bash tests/sanitize-har-canary.sh
+
+      # Plan 09: log-redactor-canary — proves HttpRequestRedactor (Plan 04) keeps the
+      # ROADMAP success #5 canary string `kanareyka_PASSWORD_DO_NOT_LEAK_42` out of
+      # test stdout (D-28 mandatory addendum: redaction works in debug builds too).
+      # Pitfall #5 closer — regression gate for password leakage.
+      - name: Run log-redactor canary
+        run: bash tests/log-redactor-canary.sh
+
   ios:
     name: iOS
     runs-on: macos-15
