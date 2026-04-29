@@ -16,14 +16,16 @@ import kotlin.test.Test
  *
  * D-25: integration test boundary — never hits live AVERS in CI. All input from
  * `fixtures/sanitized/account-{A,B}/<endpoint>.har` (Plan 02-02), loaded via the
- * `fixtures.dir` system property + `loadHarFile` expect/actual.
+ * `fixtures.dir` JVM system property OR the `FIXTURES_DIR` env-var on Kotlin/Native
+ * (see `core/api-avers-v4/build.gradle.kts` and the two actual implementations at
+ * `androidUnitTest/.../HarReplayMockEngine.android.kt` and
+ * `iosTest/.../HarReplayMockEngine.ios.kt`).
  *
- * iOS Native: this test class is intentionally located in `androidUnitTest` only — the
- * iOS Native build does NOT see it and therefore does not invoke `loadHarFile.ios.kt`
- * (which raises by design). Plan 02-09 (final integration smoke) is responsible for
- * relocating this contract — either to `commonTest` once iOS resource bundling lands, or
- * by duplicating an iosTest variant. The plan's plan-level success criteria mark this
- * caveat as acceptable for Phase 2.
+ * Plan 09 promotion: Plan 06 placed this contract in `androidUnitTest/` because the
+ * iOS Native actual was a `error(...)` stub. Plan 09 replaced the stub with a real
+ * `NSFileManager`-based implementation and propagated `FIXTURES_DIR` onto the Native
+ * test executable, so the contract now lives in `commonTest/` and runs on both the
+ * Android JVM (Robolectric) and iOS Native (iosX64Test) targets.
  *
  * Per-account scope (Plan 02-02 SUMMARY cross-account proof):
  *  - Account A: user_id 3020, pupil_id 4028, classId 1013
