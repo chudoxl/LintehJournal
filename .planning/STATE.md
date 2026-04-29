@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Phase 02 Wave 4 complete. Plan 02-06 (:core:api-avers-v4 typed endpoint contract) merged — final API surface for AVERS v4.1: 8 positional DTOs + AversEnvelope + AversApiError sealed (incl. AntiBotChallenge data class with rawHtml payload) + ApiResult + ExtJsArrayPreprocessor (strips `new Date(Y,M-1,D,...)` literals before kotlinx-serialization parses) + AntiBotDetector + AversApi + AversAuthApi + HarReplayMockEngine + EndpointsContractTest replays 12 fixtures × 2 accounts through full Ktor pipeline. 36 test cases pass. EndpointsContractTest currently in androidUnitTest/ — Plan 02-09 owns iOS Native HAR resource bundling and will promote to commonTest. Next: Wave 5 plans 02-07 (kill-switch) + 02-09 (CI iOS jobs)."
-last_updated: "2026-04-29T11:30:00.000Z"
-last_activity: 2026-04-29 -- Phase 02 Wave 4 complete (plan 02-06 merged from worktree)
+stopped_at: "Phase 02 Wave 5 complete (parallel worktree execution). Plan 02-07 (KillSwitchClient + docs/api-config.json with D-13 fail-open + D-14 cold-start cache + T-02-38 hardening) and Plan 02-09 (CI iOS jobs for :core:database/:core:network/:core:api-avers-v4 on macos-15 + canary gates wired into Android job + EndpointsContractTest promoted to commonTest + iOS Native HAR loading via NSFileManager+getenv) both merged. Build green: ci.yml valid YAML, api-config.json valid JSON, both canary scripts pass. Plan 02-07 docs commit was orchestrator-finalized after agent hit rate-limit just before the wrap-up commit (3 task commits + 1 orchestrator docs commit). Next: Wave 6 plan 02-08 — docs/aversApiV4_23813.md + tools/manual-smoke.sh (final phase deliverable)."
+last_updated: "2026-04-29T13:30:00.000Z"
+last_activity: 2026-04-29 -- Phase 02 Wave 5 complete (plans 02-07, 02-09 merged from worktrees)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 12
-  percent: 80
+  completed_plans: 14
+  percent: 93
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 ## Current Position
 
-Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 4 done; 02-07, 02-08, 02-09 pending)
-Plans: 6 of 9 (02-01 ✓, 02-02 ✓, 02-03 ✓, 02-04 ✓, 02-05 ✓, 02-06 ✓; 02-07..02-09 pending)
-Status: Ready for Wave 5 (Plans 02-07 kill-switch + 02-09 CI iOS jobs)
-Last activity: 2026-04-29 -- Phase 02 Wave 4 complete (plan 02-06 merged from worktree)
+Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 5 done; 02-08 pending)
+Plans: 8 of 9 (02-01 ✓, 02-02 ✓, 02-03 ✓, 02-04 ✓, 02-05 ✓, 02-06 ✓, 02-07 ✓, 02-09 ✓; 02-08 pending)
+Status: Ready for Wave 6 (Plan 02-08 docs/aversApiV4_23813.md + tools/manual-smoke.sh — final plan)
+Last activity: 2026-04-29 -- Phase 02 Wave 5 complete (plans 02-07, 02-09 merged from worktrees)
 
-Progress: [██████░░░░] 55% (1/6 phases shipped, Phase 02 6/9 plans done)
+Progress: [████████░░] 73% (1/6 phases shipped, Phase 02 8/9 plans done)
 
 ## Performance Metrics
 
@@ -76,7 +76,8 @@ Recent decisions affecting current work:
 - AVERS DTOs use POSITIONAL KSerializer (responses are arrays-of-arrays, not objects). All DTO files in :core:api-avers-v4 carry custom serializers; do not switch to @Serializable data class with named fields (would break parsing).
 - AversApiError.AntiBotChallenge is a `data class(rawHtml: String)`, not an object — Phase 3 WebView fallback receives the captcha page payload (D-06 reconciliation in Plan 02-06)
 - AVERS endpoint URL constants live in `AversEndpoints` object in :core:api-avers-v4 — single source of truth, captured from Plan 02-02 HAR fixtures: `/login`, `/auth/logout`, `/act/GET_STUDENT_JOURNAL_DATA`, `/act/GET_TIMETABLE`, `/act/GET_STUDENT_DAIRY`, `/act/GET_ATT_JOURNAL_DATA`, `/act/get_sms`
-- `EndpointsContractTest` lives in `androidUnitTest/` (NOT commonTest) post-02-06 — Plan 02-09 owns iOS Native HAR resource bundling and is responsible for promoting it to commonTest with `fixtures.dir` system property wiring
+- `EndpointsContractTest` now lives in `commonTest/` (Plan 02-09 promoted from androidUnitTest); iOS Native HAR loader uses `getenv("FIXTURES_DIR")` set by Gradle via `tasks.withType<KotlinNativeTest>().configureEach`
+- Kill-switch infrastructure (Plan 02-07): `docs/api-config.json` deployed via existing pages.yml; `KillSwitchClient.checkOrFailOpen()` uses Mutex-guarded double-checked in-memory cache (D-14); fail-open arm collapses HttpRequestTimeoutException + non-2xx + malformed JSON + DNS failure into Success(defaultConfig); T-02-38 hardening: `severity=block` honored ONLY when `latestSupportedAversBuild != currentAversBuild`
 
 ### Pending Todos
 
@@ -110,5 +111,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-29
-Stopped at: Wave 4 complete. Plan 02-06 merged — :core:api-avers-v4 typed endpoint contract production-ready. Full pipeline proof: 12 sanitized HAR fixtures × 2 accounts replay green through HttpClientFactory → AversAuthInterceptor → RoomCookiesStorage → HarReplayMockEngine → AversApi → ExtJsArrayPreprocessor → DTO → ApiResult. 36 test cases pass Android JVM. EndpointsContractTest in androidUnitTest/ pending iOS promotion in 02-09.
-Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-06-SUMMARY.md (Plan 02-07 reads it for KillSwitchClient — uses ApiResult/AversApiError contract; Plan 02-09 reads it for iOS HarReplayMockEngine.ios.kt skeleton + commonTest promotion)
+Stopped at: Wave 5 complete (parallel worktree). Plans 02-07 (kill-switch + docs/api-config.json) and 02-09 (CI iOS jobs + commonTest promote) both merged. EndpointsContractTest now in commonTest, iOS HAR loader real, ci.yml runs :core:database/:core:network/:core:api-avers-v4 iosX64Test on macos-15 with fixtures.dir env-var, Android job runs both canaries. Kill-switch contract live with D-13 fail-open + D-14 cache + T-02-38 hardening.
+Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-07-SUMMARY.md + 02-09-SUMMARY.md (Plan 02-08 docs reads both for AVERS API documentation + manual-smoke wiring)
