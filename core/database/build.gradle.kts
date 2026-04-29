@@ -23,6 +23,24 @@ kotlin {
             implementation(libs.kermit)
             implementation(project(":core:platform"))
         }
+        commonTest.dependencies {
+            // Plan 02-03: in-memory Room contract tests in commonTest
+            // (CookieDaoTest, SchemaV1Test). runTest{} requires kotlinx-coroutines-test.
+            implementation(libs.kotlinx.coroutines.test)
+        }
+        val androidUnitTest by getting {
+            dependencies {
+                // Robolectric provides synthetic Application context for
+                // ApplicationProvider.getApplicationContext() in InMemoryRoom.android.kt.
+                // Required by CookieDaoTestAndroid + SchemaV1TestAndroid (@RunWith).
+                implementation(libs.robolectric)
+                implementation(libs.androidx.test.ext.junit)
+                // Robolectric cannot load BundledSQLiteDriver's JNI .so — use
+                // AndroidSQLiteDriver (sqlite-framework) for Android JVM tests.
+                // iOS Native tests keep BundledSQLiteDriver via iosTest actual.
+                implementation(libs.androidx.sqlite.framework)
+            }
+        }
     }
 }
 
