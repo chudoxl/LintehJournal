@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Phase 02 Wave 2 complete (parallel worktree execution). Plan 02-03 :core:database (JournalDatabase v1 cookies-only schema, per-account file `journal_${accountId}.db`, CookieEntity+CookieDao+DatabaseFactory expect/actual, ApplicationContextProvider exposed from :core:platform/androidMain). Plan 02-04 :core:network (HttpClientFactory.forAccount/evict per-account-cached HttpClient, AversAuthInterceptor scaffold, HttpRequestRedactor scrubs ys-* cookies + l/p login params from Kermit logs). Both modules assemble + tests pass on Android JVM and iOS-side compile. Ktor downgraded 3.4.3 → 3.3.3 (3.4.x requires Kotlin 2.3.0 which breaks Compose 1.10.3 binary metadata)."
-last_updated: "2026-04-29T09:30:00.000Z"
-last_activity: 2026-04-29 -- Phase 02 Wave 2 complete (plans 02-03, 02-04 merged from worktrees)
+stopped_at: "Phase 02 Wave 3 complete. Plan 02-05 (RoomCookiesStorage + AccountDataPurger) merged — :core:network ↔ :core:database connector live. AversAuthInterceptor (02-04 scaffold) now reads/writes ys-* cookies via CookieDao through per-account journal_${accountId}.db. AccountDataPurger orchestrates 3-step purge for cross-account leak prevention (D-04). DatabaseFileResolver expect/actual covers Android (Context.getDatabasePath) and iOS (NSDocumentDirectory). 27 commonTest cases pass. Next: Wave 4 plan 02-06 — :core:api-avers-v4 DTOs + EndpointsContractTest replays 12 sanitized HAR fixtures."
+last_updated: "2026-04-29T10:50:00.000Z"
+last_activity: 2026-04-29 -- Phase 02 Wave 3 complete (plan 02-05 merged from worktree)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 10
-  percent: 67
+  completed_plans: 11
+  percent: 73
 ---
 
 # Project State
@@ -25,32 +25,32 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 ## Current Position
 
-Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 2 done; 02-05..02-09 pending)
-Plans: 4 of 9 (02-01 ✓, 02-02 ✓, 02-03 ✓, 02-04 ✓; 02-05..02-09 pending)
-Status: Ready for Wave 3 (Plan 02-05 RoomCookiesStorage + AccountDataPurger)
-Last activity: 2026-04-29 -- Phase 02 Wave 2 complete (plans 02-03, 02-04 merged from worktrees)
+Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 3 done; 02-06..02-09 pending)
+Plans: 5 of 9 (02-01 ✓, 02-02 ✓, 02-03 ✓, 02-04 ✓, 02-05 ✓; 02-06..02-09 pending)
+Status: Ready for Wave 4 (Plan 02-06 :core:api-avers-v4 DTOs + EndpointsContractTest)
+Last activity: 2026-04-29 -- Phase 02 Wave 3 complete (plan 02-05 merged from worktree)
 
-Progress: [████░░░░░░] 36% (1/6 phases shipped, Phase 02 4/9 plans done)
+Progress: [█████░░░░░] 45% (1/6 phases shipped, Phase 02 5/9 plans done)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 4
-- Average duration: ~30 min (executor agents)
-- Total execution time: ~3 hours
+- Total plans completed: 5
+- Average duration: ~28 min (executor agents)
+- Total execution time: ~3.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 1 | 15 min | 15 min |
-| 2 | 3 | ~115 min | ~38 min |
+| 2 | 4 | ~130 min | ~32 min |
 
 **Recent Trend:**
 
-- 02-01-skeleton (15 min) → 02-02-har-capture (45 min programmatic) → Wave 2 parallel: 02-03-room (50 min) + 02-04-network (21 min) [worktree-isolated, ~50 min wall-time]
-- Trend: parallel waves halve wall-time; 02-04 was fastest because Plan 01 had pre-staged libs.versions.toml entries
+- 02-01-skeleton (15 min) → 02-02-har-capture (45 min programmatic) → Wave 2 parallel: 02-03-room (50 min) + 02-04-network (21 min) → Wave 3 sequential: 02-05-cookies (13 min)
+- Trend: 02-05 fastest plan in phase — single-module work with clear contract from Wave 2 merge prep + reused Spec/Wrapper test pattern from 02-03
 
 *Updated after each plan completion*
 
@@ -106,5 +106,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-29
-Stopped at: Wave 2 complete (parallel worktree execution). Plans 02-03 (Room) + 02-04 (HttpClient) merged. Both modules assemble + test cleanly on Android JVM (`./gradlew :core:database:test :core:network:test` pass) and iOS-side compile pass. Ktor downgraded to 3.3.3 (downstream waves must use this).
-Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-03-SUMMARY.md + 02-04-SUMMARY.md (Plan 02-05 must read both — depends on [03, 04])
+Stopped at: Wave 3 complete. Plan 02-05 merged. AVERS auth chain end-to-end ready: HttpClientFactory → AversAuthInterceptor → RoomCookiesStorage → CookieDao → per-account journal_${accountId}.db. AccountDataPurger orchestrates cross-account leak prevention (D-04). 27 cookies/purge test cases green on Android JVM + iOS-side compile passes.
+Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-05-SUMMARY.md (Plan 02-06 must read it + 02-02-SUMMARY.md API contract section before building :core:api-avers-v4 DTOs and HarReplayMockEngine)
