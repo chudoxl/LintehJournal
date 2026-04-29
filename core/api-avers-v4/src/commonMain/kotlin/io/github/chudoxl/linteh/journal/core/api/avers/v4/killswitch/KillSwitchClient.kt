@@ -4,12 +4,14 @@ import co.touchlab.kermit.Logger
 import io.github.chudoxl.linteh.journal.core.api.avers.v4.result.ApiResult
 import io.github.chudoxl.linteh.journal.core.api.avers.v4.result.AversApiError
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.Json
 
 private const val TAG = "KillSwitchClient"
 
@@ -28,12 +30,17 @@ private const val TAG = "KillSwitchClient"
  * `latestSupportedAversBuild != currentAversBuild`. Prevents an accidental `severity=block`
  * on the current build (e.g., a typo in the static JSON) from bricking the entire user base.
  *
+ * Body parsing follows the Plan 02-06 convention: `bodyAsText()` plus `Json.parseToJsonElement`
+ * with a custom KSerializer ([KillSwitchConfigSerializer]). The kotlinx-serialization compiler
+ * plugin is NOT applied to `:core:api-avers-v4` (only the runtime); custom KSerializers per
+ * `@Serializable(with = ...)` DTO are the established pattern.
+ *
  * @property httpClient any pre-configured [HttpClient]. The kill-switch URL is non-AVERS so the
  *   AVERS-specific plugin chain (cookies, redactor, retry) is not required — but it does no
  *   harm either if the same factory client is reused. Caller must ensure the [HttpClient]
- *   has [io.ktor.client.plugins.HttpTimeout] installed if `timeoutMillis` < the engine
- *   default; the project [io.github.chudoxl.linteh.journal.core.network.HttpClientFactory]
- *   already installs it.
+ *   has [io.ktor.client.plugins.HttpTimeout] installed if `timeoutMillis` is meant to apply;
+ *   the project [io.github.chudoxl.linteh.journal.core.network.HttpClientFactory] already
+ *   installs it.
  * @property killSwitchUrl deployable URL of the static config; defaults to the project's
  *   GitHub Pages location.
  * @property currentAversBuild build identifier of AVERS that the app is built against
@@ -51,6 +58,7 @@ class KillSwitchClient(
 ) {
     private val mutex = Mutex()
     private var cached: KillSwitchConfig? = null
+    private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
     /**
      * Cold-start kill-switch check.
@@ -71,13 +79,17 @@ class KillSwitchClient(
             cached?.let { return@withLock interpretConfig(it) }
 
             val cfg = runCatching {
-                httpClient.get(killSwitchUrl) {
+                val response = httpClient.get(killSwitchUrl) {
                     timeout { requestTimeoutMillis = timeoutMillis }
-                }.body<KillSwitchConfig>()
+                }
+                if (!response.status.isSuccess()) {
+                    error("Non-2xx status ${response.status.value} from $killSwitchUrl")
+                }
+                val body = response.bodyAsText()
+                val element = json.parseToJsonElement(body)
+                json.decodeFromJsonElement(KillSwitchConfigSerializer, element)
             }.getOrElse { e ->
-                // D-13 fail-open: timeout, 404 (Ktor throws ClientRequestException by default
-                // when expectSuccess=true; even when not, body<T>() on an empty/non-JSON body
-                // throws SerializationException), DNS failure, malformed JSON — all collapse
+                // D-13 fail-open: timeout, 404, DNS failure, malformed JSON — all collapse
                 // to the default config. Never blocks the user.
                 when (e) {
                     is HttpRequestTimeoutException ->
