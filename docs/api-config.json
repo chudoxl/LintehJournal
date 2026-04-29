@@ -1,0 +1,7 @@
+{
+  "latestSupportedAversBuild": "23813",
+  "message": "",
+  "severity": "info",
+  "minAppVersion": "0.2.0",
+  "_comment": "AVERS kill-switch config. severity values: info/warning/block. severity=block honored only when latestSupportedAversBuild != current app build (T-02-38 hardening). D-13 fail-open: app continues normally on fetch failure."
+}

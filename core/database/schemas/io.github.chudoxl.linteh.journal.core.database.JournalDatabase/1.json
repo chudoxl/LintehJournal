@@ -1,0 +1,75 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "7fb5dc340c8a09d8519da0aa00a6ec19",
+    "entities": [
+      {
+        "tableName": "cookies",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`accountId` TEXT NOT NULL, `name` TEXT NOT NULL, `value` TEXT NOT NULL, `domain` TEXT NOT NULL, `path` TEXT NOT NULL, `expiresAtEpochMillis` INTEGER, `httpOnly` INTEGER NOT NULL, `secure` INTEGER NOT NULL, PRIMARY KEY(`accountId`, `name`, `domain`, `path`))",
+        "fields": [
+          {
+            "fieldPath": "accountId",
+            "columnName": "accountId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "domain",
+            "columnName": "domain",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "path",
+            "columnName": "path",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expiresAtEpochMillis",
+            "columnName": "expiresAtEpochMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "httpOnly",
+            "columnName": "httpOnly",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "secure",
+            "columnName": "secure",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "accountId",
+            "name",
+            "domain",
+            "path"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7fb5dc340c8a09d8519da0aa00a6ec19')"
+    ]
+  }
+}

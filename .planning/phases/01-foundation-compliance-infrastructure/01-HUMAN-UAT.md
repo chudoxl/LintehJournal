@@ -3,7 +3,7 @@ status: partial
 phase: 01-foundation-compliance-infrastructure
 source: [01-03-ci-workflows-PLAN.md (Task 3), 01-04-privacy-policy-PLAN.md (Task 3)]
 started: 2026-04-28T08:20:00Z
-updated: 2026-04-28T08:30:00Z
+updated: 2026-04-28T09:30:00Z
 ---
 
 ## Current Test
@@ -14,7 +14,7 @@ updated: 2026-04-28T08:30:00Z
 
 ### 1. Enable GitHub Pages (required before Plan 04 deploy)
 expected: Settings → Pages → Source = GitHub Actions; "Your site is ready to be published at https://chudoxl.github.io/LintehJournal/" appears.
-result: [pending]
+result: passed
 location: https://github.com/chudoxl/LintehJournal/settings/pages
 
 ### 2. Configure main branch protection rule (after first PR with CI workflow)
@@ -23,13 +23,15 @@ expected: Settings → Branches → Add rule for `main`:
 - Require branches up-to-date: ON
 - Require conversation resolution: ON
 - (Optional) Do not allow bypassing: ON
-result: [pending]
+result: failed: в настройках нет опции "Require conversation resolution"
 location: https://github.com/chudoxl/LintehJournal/settings/branches
+note: GitHub UI переместил эту опцию в Settings → Rules → Rulesets (страница "Branch protection rules" в maintenance mode); owner-only manual action — отложено в v2 hardening, конкретно: создать ruleset на `main` с `Require status checks` (Android + iOS) + `Require conversation resolution` + `Restrict deletions` + `Require linear history`. Tracked as todo для v2.
 
 ### 3. Verify first CI run green
 expected: Workflow `CI` shows green status for both Android + iOS jobs after first push to main.
-result: [pending]
+result: passed (после локального fix: `lint { disable += "NullSafeMutableLiveData" }` в composeApp/build.gradle.kts)
 location: https://github.com/chudoxl/LintehJournal/actions
+note: AGP 8.7.3 bundles NonNullableMutableLiveDataDetector (lint ID `NullSafeMutableLiveData`) compiled против Kotlin 2.0.x lint-analysis API; с Kotlin 2.2.20 в этом проекте detector кидает IncompatibleClassChangeError при `lintAnalyzeDebug`. Detector нерелевантен (Compose KMP, ViewModel KMP, no MutableLiveData в кодбейзе). Disabled per official AGP recommendation. Revisit when AGP 8.8+ rebuilds detectors против Kotlin 2.2.
 
 ### 4. Verify Pages deploy workflow succeeded (Plan 04)
 expected: Workflow `Deploy GitHub Pages` shows all steps green:
@@ -38,7 +40,7 @@ expected: Workflow `Deploy GitHub Pages` shows all steps green:
 - `Stamp Last-Modified date` (sed substituted `{{LAST_MODIFIED}}` with actual git-derived date)
 - `Upload artifact`
 - `Deploy to GitHub Pages` (output `page_url` printed)
-result: [pending]
+result: passed
 location: https://github.com/chudoxl/LintehJournal/actions
 note: depends on test 1 (Pages must be enabled before first run); if `Setup Pages` fails with "Pages site not enabled" — go back to test 1, then retrigger workflow (e.g., push trivial change in `docs/` or use Re-run jobs button)
 
@@ -61,19 +63,19 @@ curl -sf https://chudoxl.github.io/LintehJournal/privacy/ | grep -q "iOS Keychai
 curl -sf https://chudoxl.github.io/LintehJournal/privacy/ | grep -E "Последнее обновление: 20[0-9]{2}-[0-9]{2}-[0-9]{2}"; echo $?
 # 0
 ```
-result: [pending]
+result: failed
 location: terminal (host with curl)
 note: if literal `{{LAST_MODIFIED}}` appears in output, sed-step in pages.yml did not run — check workflow logs for `Stamp Last-Modified date` step (most likely cause: fetch-depth not set to 0; BLOCKER 3 iter 2)
 
 ### 6. Privacy Policy visual review (Plan 04)
 expected: Browser https://chudoxl.github.io/LintehJournal/privacy/ shows:
-- [ ] Заголовок «Политика конфиденциальности»
-- [ ] Все секции присутствуют («Что мы НЕ делаем», «Что хранится на вашем устройстве», «С какими сервисами мы общаемся», «Перечень обрабатываемых ПДн», «Удаление данных», «Связь с разработчиком», «Изменения в политике»)
-- [ ] HTTPS-замок в адресной строке (T-01-pages-02 mitigation — Pages enforces HTTPS by default)
-- [ ] Footer показывает дату вида `Последнее обновление: YYYY-MM-DD` (НЕ literal `{{LAST_MODIFIED}}`)
-- [ ] Кириллица читаема (UTF-8 OK, нет mojibake)
-- [ ] https://chudoxl.github.io/LintehJournal/ показывает root index с ссылкой на «Политика конфиденциальности»
-result: [pending]
+- [x] Заголовок «Политика конфиденциальности»
+- [x] Все секции присутствуют («Что мы НЕ делаем», «Что хранится на вашем устройстве», «С какими сервисами мы общаемся», «Перечень обрабатываемых ПДн», «Удаление данных», «Связь с разработчиком», «Изменения в политике»)
+- [x] HTTPS-замок в адресной строке (T-01-pages-02 mitigation — Pages enforces HTTPS by default)
+- [x] Footer показывает дату вида `Последнее обновление: YYYY-MM-DD` (НЕ literal `{{LAST_MODIFIED}}`)
+- [x] Кириллица читаема (UTF-8 OK, нет mojibake)
+- [x] https://chudoxl.github.io/LintehJournal/ показывает root index с ссылкой на «Политика конфиденциальности»
+result: passed
 location: browser
 
 ### 7. Hello LinTech UX smoke test on Android device/emulator (Plan 02 / Phase 1 verification)
@@ -83,15 +85,15 @@ expected: установка debug APK на физическое Android уст�
 - Privacy Policy URL виден (privacy_url)
 - Кнопка «Открыть» работает — открывает URL в системном браузере (после Pages enable URL вернёт 200)
 - Cyrillic читается без mojibake
-result: [pending]
+result: passed
 location: Android device or emulator (`./gradlew :composeApp:installDebug && adb shell am start -n io.github.chudoxl.linteh.journal/.MainActivity`)
 
 ## Summary
 
 total: 7
-passed: 0
-issues: 0
-pending: 7
+passed: 5
+issues: 2
+pending: 0
 skipped: 0
 blocked: 0
 
@@ -111,3 +113,5 @@ blocked: 0
   - "blocked-pages-not-enabled" — pages.yml workflow failed at `Setup Pages` → enable Pages in Settings → retrigger
   - "blocked-shallow-checkout" — workflow failed at `Stamp Last-Modified date` → verify fetch-depth: 0 in pages.yml checkout step
   - "blocked-ci-failure" — first CI run red → debug (likely environmental; share workflow logs)
+- UAT-3 closure: lint-disable workaround applied 2026-04-28 (commit будет добавлен этим коммитом) — see Test 3 note. CI Android job сейчас зелёный для `assembleDebug + lint + test`.
+- UAT-2 follow-up: Rulesets configuration deferred to v2 hardening (separate todo) — current main branch не защищён GitHub-side, опираемся на solo-developer workflow + green CI checks как трипвайр.

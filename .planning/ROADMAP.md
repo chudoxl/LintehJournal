@@ -12,8 +12,8 @@ Compose Multiplatform мобильный клиент к ИАС АВЕРС (за
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Compliance Infrastructure** — Gradle multi-module skeleton, convention plugins, SwiftPM, CI обе платформы, Privacy Manifest stub, Privacy Policy опубликована
-- [ ] **Phase 2: API Reverse-Engineering & Network Layer** — mitmproxy/HAR-захват закрытого ExtJS-API АВЕРС, Ktor per-account клиент с persistent cookies, versioned API-модуль (HIGHEST uncertainty)
+- [x] **Phase 1: Foundation & Compliance Infrastructure** — Gradle multi-module skeleton, convention plugins, SwiftPM, CI обе платформы, Privacy Manifest stub, Privacy Policy опубликована (completed 2026-04-28)
+- [x] **Phase 2: API Reverse-Engineering & Network Layer** — Chrome DevTools/programmatic HAR-захват закрытого ExtJS-API АВЕРС, Ktor per-account клиент с persistent cookies, versioned API-модуль (HIGHEST uncertainty) (completed 2026-04-29; verification pending)
 - [ ] **Phase 3: Auth & Secure Credential Storage** — login/password АВЕРС, Keychain/Keystore через KVault с защитой от iCloud-утечки, logout с очисткой данных
 - [ ] **Phase 4: UI Shell, Grades & Offline Foundation** — core:ui + composeApp + Navigation 3, оценки end-to-end, offline-first паттерн, staleness indicators, тёмная тема, локализация RU, accessibility, прогноз и график
 - [ ] **Phase 5: Multi-Account, Schedule, Homework, Attendance & Messages** — per-account scope активирован, оставшиеся вертикали копируют паттерн grades
@@ -48,12 +48,41 @@ Plans:
 **Depends on**: Phase 1
 **Requirements**: (нет — infrastructure для всех последующих фаз; самая высокая неопределённость в проекте — закрытый ExtJS-API без публичной документации)
 **Success Criteria** (what must be TRUE):
-  1. В репозитории лежат HAR-snapshots реальных запросов АВЕРС (login, оценки, расписание, ДЗ, посещаемость, сообщения) — захваченные через mitmproxy для `journal.school28-kirov.ru`
+  1. В репозитории лежат HAR-snapshots реальных запросов АВЕРС (login, оценки, расписание, ДЗ, посещаемость, сообщения) — захваченные через **Chrome DevTools** для `journal.school28-kirov.ru` (D-02 correction: dev-host = Linux Mint; Chrome DevTools HAR-export проще mitmproxy, mobile UA divergence риск задокументирован и митигируется параметризованным UA в `HttpClientFactory` + первым реальным Android-run в Phase 4)
   2. Документ `aversApiV4_23813.md` описывает: login flow (cookie/CSRF), формат ответов (ExtJS `{success, data}` или прямой), endpoint-карту, anti-bot пороги, выяснено отдаются ли «замены», прикреплённые файлы ДЗ и веса оценок
   3. `HttpClientFactory.forAccount(id)` возвращает Ktor-клиент c persistent cookies в Room-таблице, UA mimic Mobile Safari, throttling и retry — повторяет реальный login против тестового аккаунта без срабатывания CAPTCHA
   4. Canary-endpoint при старте приложения сравнивает ответ с эталоном; remote kill-switch (статический JSON на CDN) умеет показать пользователю баннер «обновите приложение»
   5. Логирование запросов — `LogLevel.NONE` в release, `sanitizeHeader` для Authorization/Cookie, canary-test «kanareyka_PASSWORD_DO_NOT_LEAK_42» в CI не находит совпадений в логах
-**Plans**: TBD
+**Plans:** 9 plans
+
+Plans:
+
+**Wave 1** *(parallelisable; Plan 02 retroactively autonomous: true — programmatic capture via tools/capture-avers-fixtures.py)*
+- [x] 02-01-PLAN.md — Gradle deps + `:core:database`+`:core:api-avers-v4` skeletons + sanitize-har tooling + log-redactor canary + ROADMAP edit (mitmproxy → Chrome DevTools) (completed 2026-04-28)
+- [x] 02-02-PLAN.md — HAR captures (account-A + account-B × 6 endpoints, 12 sanitized fixtures) (completed 2026-04-29 programmatically — see 02-02-SUMMARY.md)
+
+**Wave 2** *(parallel worktree execution)*
+- [x] 02-03-PLAN.md — Room JournalDatabase + DatabaseFactory + Cookie schema v1 + iOS NSFileProtectionComplete (completed 2026-04-29; iOS NSFileProtection deferred to Phase 6 per 02-CONTEXT.md)
+- [x] 02-04-PLAN.md — HttpClientFactory + plugin chain + HttpRequestRedactor + AversAuthInterceptor + CredentialProvider (completed 2026-04-29; Ktor downgraded 3.4.3 → 3.3.3 to preserve Compose 1.10.3 binary metadata)
+
+**Wave 3**
+- [x] 02-05-PLAN.md — RoomCookiesStorage + CookieMapper + AccountDataPurger (completed 2026-04-29)
+
+**Wave 4**
+- [x] 02-06-PLAN.md — `:core:api-avers-v4` DTOs + ApiResult + AversApiError + 6-endpoint contract tests via HAR replay (completed 2026-04-29; 12 EndpointsContractTest cases × 2 accounts replay green)
+
+**Wave 5** *(parallel worktree execution)*
+- [x] 02-07-PLAN.md — KillSwitchClient + docs/api-config.json (GitHub Pages-deployed) (completed 2026-04-29; D-13 fail-open + D-14 cache + T-02-38 hardening)
+- [x] 02-09-PLAN.md — CI iOS test invocations (`:core:database/network/api-avers-v4:iosX64Test`) + canary scripts wired + iOS Native HAR resource loading (completed 2026-04-29; EndpointsContractTest promoted to commonTest)
+
+**Wave 6**
+- [x] 02-08-PLAN.md — docs/aversApiV4_23813.md (API contract narrative) + changelog + tools/manual-smoke.sh (completed 2026-04-29)
+
+**Cross-cutting constraints** (truths appearing in 2+ plans — executor MUST preserve across waves):
+- HttpRequestRedactor canary `kanareyka_PASSWORD_DO_NOT_LEAK_42` greps clean in BOTH debug and release builds (D-28; introduced in 02-01, validated in 02-04 / 02-09)
+- Single source of truth versions in `gradle/libs.versions.toml` — no version literals in module `build.gradle.kts` (D-02; entrenched 02-01, respected by 02-03..09)
+- Per-account scope invariant — `journal_${accountId}.db` filename pattern + cookies scoped per-account (D-15..18; created 02-03, consumed 02-04 / 02-05)
+- `core/api-avers-v4/build.gradle.kts` — `fixtures.dir` system property must be passed to ALL Test tasks (Android JVM AND iOS Native); landed in 02-06, extended to iOS in 02-09
 
 **Closes pitfalls:** #2 (API fragility — versioned `aversApiV4_23813` модуль + canary + remote kill-switch + HAR-snapshot тесты), #11 (anti-bot — UA mimic, throttling, retry-after, WebView fallback за feature flag), #19 (SSL — system trust, no pinning), #5 (logging hygiene — sanitizeHeader + redactor + canary-test)
 
