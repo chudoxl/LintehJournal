@@ -57,10 +57,48 @@ if [[ ! -f .env.local ]]; then
   exit 1
 fi
 
-# shellcheck disable=SC1091
-set -a
-source .env.local
-set +a
+# ---------------------------------------------------------------------------
+# Parse .env.local as literal KEY=VALUE (NOT bash-evaluated).
+# Why not `source`: values may contain shell metacharacters like `(`, `$`,
+# backtick — bash would interpret them. .env.local is plain KEY=VALUE per
+# tools/manual-smoke.README.md §Setup. See HUMAN-UAT bug 260429-uau.
+# ---------------------------------------------------------------------------
+declare -A _ENV_ALLOWED=(
+  [AVERS_LOGIN]=1
+  [AVERS_PASSWORD]=1
+  [AVERS_HOST]=1
+  [AVERS_LOGIN_PATH]=1
+  [AVERS_GRADES_PATH]=1
+)
+
+while IFS= read -r line || [[ -n "$line" ]]; do
+  # Strip trailing CR (CRLF tolerance for files saved on Windows)
+  line="${line%$'\r'}"
+  # Trim leading whitespace
+  line="${line#"${line%%[![:space:]]*}"}"
+  # Skip blanks and comments
+  [[ -z "$line" || "$line" == \#* ]] && continue
+  # Require an `=` somewhere
+  [[ "$line" == *=* ]] || continue
+  # Split on FIRST `=`
+  key="${line%%=*}"
+  val="${line#*=}"
+  # Trim trailing whitespace from key (rare but possible: `KEY = value`)
+  key="${key%"${key##*[![:space:]]}"}"
+  # Validate key: env-var shape AND in whitelist
+  [[ "$key" =~ ^[A-Z_][A-Z0-9_]*$ ]] || continue
+  [[ -n "${_ENV_ALLOWED[$key]:-}" ]] || continue
+  # Strip outer matching quotes (single or double)
+  if [[ "${#val}" -ge 2 ]]; then
+    first="${val:0:1}"
+    last="${val: -1}"
+    if [[ ( "$first" == '"' && "$last" == '"' ) || ( "$first" == "'" && "$last" == "'" ) ]]; then
+      val="${val:1:${#val}-2}"
+    fi
+  fi
+  export "$key=$val"
+done < .env.local
+unset _ENV_ALLOWED
 
 if [[ -z "${AVERS_LOGIN:-}" || -z "${AVERS_PASSWORD:-}" ]]; then
   echo "ERROR: AVERS_LOGIN or AVERS_PASSWORD missing in .env.local"
