@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Phase 02 ALL 9 PLANS COMPLETE (Wave 6 final plan 02-08 merged). docs/aversApiV4_23813.md (558-line canonical API contract) + CHANGELOG + tools/manual-smoke.sh (CI-refusal, SHA-1 password hashing) committed. Phase 2 success criteria from ROADMAP.md ready for goal-backward verification (gsd-verifier). All Phase 2 deliverables: 12 sanitized HAR fixtures, :core:database (Room schema-v1), :core:network (Ktor 3.3.3 + AversAuthInterceptor + RoomCookiesStorage + AccountDataPurger), :core:api-avers-v4 (8 DTOs + AversApiError + EndpointsContractTest replays 12 fixtures), kill-switch (D-13 fail-open + T-02-38), CI iOS jobs (macos-15) + canary gates, AVERS API documentation."
-last_updated: "2026-04-29T13:50:00.000Z"
-last_activity: 2026-04-29 -- Phase 02 complete (all 9 plans merged); awaiting verification
+stopped_at: "Phase 02 COMPLETE — gsd-verifier returned PASS on all 5 ROADMAP success criteria (12 HAR fixtures, 558-line API doc, HttpClientFactory + RoomCookiesStorage + 12 EndpointsContractTest cases × 2 accounts replay green, kill-switch D-13 fail-open + T-02-38, logging hygiene + canary). VERIFICATION.md committed (f0b18d9). Carried-forward concerns surfaced for Phase 3 (KVault CredentialProvider, AversAuthApi 3-step handshake with JS-escape polyfill + ys-* cookie writeback) and Phase 4 (UI banner consumption, DTO→domain mapper, real account id wiring). Ready to route to Phase 3 (Auth & Secure Credential Storage)."
+last_updated: "2026-04-29T13:25:00.000Z"
+last_activity: 2026-04-29 -- Phase 02 complete (verifier PASS 5/5)
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 15
   completed_plans: 15
   percent: 100
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 ## Current Position
 
-Phase: 02 (api-reverse-engineering-network-layer) — ALL PLANS MERGED (verification pending)
-Plans: 9 of 9 (all ✓ — 02-01..02-09)
-Status: Awaiting Phase 2 verification (gsd-verifier goal-backward analysis vs ROADMAP §Phase 2 success criteria)
-Last activity: 2026-04-29 -- Phase 02 complete (all 9 plans merged)
+Phase: 02 (api-reverse-engineering-network-layer) — ✅ COMPLETE (verifier PASS 5/5)
+Plans: 9 of 9 (all ✓ — 02-01..02-09 + VERIFICATION.md)
+Status: Phase shipped. Ready to route to Phase 3 (Auth & Secure Credential Storage)
+Last activity: 2026-04-29 -- Phase 02 complete (verifier PASS)
 
-Progress: [█████████░] 90% (1/6 phases shipped, Phase 02 9/9 plans done — verification pending)
+Progress: [██████████] 33% (2/6 phases shipped — Phase 1 + Phase 2)
 
 ## Performance Metrics
 
@@ -111,5 +111,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-29
-Stopped at: All 9 Phase 2 plans merged. Phase 2 deliverables complete; awaiting gsd-verifier goal-backward analysis vs ROADMAP §Phase 2 success criteria + integration check.
-Resume file: After verification — STATE.md will tick to phase complete and route to Phase 3 planning. Phase 3 reads: 02-08-SUMMARY.md (canonical API contract) + 02-06-SUMMARY.md (DTO production code) + Plan 02-09 commonTest EndpointsContractTest (regression baseline).
+Stopped at: Phase 02 closed. Verifier PASS 5/5; VERIFICATION.md committed at f0b18d9. Ready to plan/execute Phase 3 (Auth & Secure Credential Storage — login/password АВЕРС via Keychain/Keystore через KVault, logout с очисткой данных).
+Resume file: For Phase 3 planning — read .planning/phases/02-api-reverse-engineering-network-layer/VERIFICATION.md §Carried-Forward Concerns. Critical Phase 3 inputs: KVault CredentialProvider implementation, AversAuthApi.login() needs full 3-step handshake (SHA-1 password + JS-escape() polyfill + ys-* cookie writeback to RoomCookiesStorage + POST /auth completion), DB filename rename `journal_default.db` → `journal_${realAccountId}.db` after credential capture.
