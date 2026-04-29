@@ -60,6 +60,17 @@ Required runtime tools on dev-host (Linux Mint by default — all bundled, no ex
    echo $?                                 # → 1
    ```
 
+4. **Note: `.env.local` parsing semantics**
+
+   `.env.local` is parsed as plain `KEY=VALUE` lines — NOT evaluated as a bash script.
+   This means **special characters in values need no escaping or quoting**: passwords
+   containing `(`, `)`, `$`, backtick, `"`, `'`, `\`, or spaces are read literally.
+   Outer matching quotes are stripped (so both `AVERS_PASSWORD=abc` and
+   `AVERS_PASSWORD="abc"` give the same result). Lines starting with `#` are comments.
+   Only the whitelisted keys (`AVERS_LOGIN`, `AVERS_PASSWORD`, `AVERS_HOST`,
+   `AVERS_LOGIN_PATH`, `AVERS_GRADES_PATH`) are exported — unknown keys are silently
+   ignored, so a malicious `.env.local` cannot clobber `PATH`, `LD_PRELOAD`, etc.
+
 ## Usage
 
 ```sh
@@ -165,3 +176,7 @@ covers everything else; manual-smoke is just a tripwire.
   flow that handles client-side cookie injection.
 - **`required tool 'X' not found on PATH`** — install `curl` / `python3` / `file` /
   `coreutils` via your package manager.
+- **`неожиданный конец файла во время поиска «)»`** — historical bug fixed in quick
+  task 260429-uau. `.env.local` is now parsed literally (see §Setup item 4); if you
+  see this on an older checkout, pull latest `phase-02/api-network-layer` (or `main`
+  after merge).
