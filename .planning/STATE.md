@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 Phase: 02 (api-reverse-engineering-network-layer) — ✅ COMPLETE (verifier PASS 5/5)
 Plans: 9 of 9 (all ✓ — 02-01..02-09 + VERIFICATION.md)
 Status: Phase shipped. Ready to route to Phase 3 (Auth & Secure Credential Storage)
-Last activity: 2026-04-29 -- Phase 02 complete (verifier PASS)
+Last activity: 2026-04-29 -- Quick task 260429-uau complete (manual-smoke env parser fix)
 
 Progress: [██████████] 33% (2/6 phases shipped — Phase 1 + Phase 2)
 
@@ -99,6 +99,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260428-h55 | fix(01): disable NullSafeMutableLiveData lint detector + close UAT items | 2026-04-28 | 37fc2c2 | [260428-h55-fix-01-disable-nullsafemutablelivedata-l](./quick/260428-h55-fix-01-disable-nullsafemutablelivedata-l/) |
+| 260429-uau | fix(02-08): parse .env.local as literal KEY=VALUE in manual-smoke.sh — handle shell metacharacters | 2026-04-29 | c52cd59 | [260429-uau-fix-02-08-parse-env-local-as-literal-key](./quick/260429-uau-fix-02-08-parse-env-local-as-literal-key/) |
 
 ## Deferred Items
 
