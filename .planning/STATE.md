@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Phase 02 Wave 3 complete. Plan 02-05 (RoomCookiesStorage + AccountDataPurger) merged — :core:network ↔ :core:database connector live. AversAuthInterceptor (02-04 scaffold) now reads/writes ys-* cookies via CookieDao through per-account journal_${accountId}.db. AccountDataPurger orchestrates 3-step purge for cross-account leak prevention (D-04). DatabaseFileResolver expect/actual covers Android (Context.getDatabasePath) and iOS (NSDocumentDirectory). 27 commonTest cases pass. Next: Wave 4 plan 02-06 — :core:api-avers-v4 DTOs + EndpointsContractTest replays 12 sanitized HAR fixtures."
-last_updated: "2026-04-29T10:50:00.000Z"
-last_activity: 2026-04-29 -- Phase 02 Wave 3 complete (plan 02-05 merged from worktree)
+stopped_at: "Phase 02 Wave 4 complete. Plan 02-06 (:core:api-avers-v4 typed endpoint contract) merged — final API surface for AVERS v4.1: 8 positional DTOs + AversEnvelope + AversApiError sealed (incl. AntiBotChallenge data class with rawHtml payload) + ApiResult + ExtJsArrayPreprocessor (strips `new Date(Y,M-1,D,...)` literals before kotlinx-serialization parses) + AntiBotDetector + AversApi + AversAuthApi + HarReplayMockEngine + EndpointsContractTest replays 12 fixtures × 2 accounts through full Ktor pipeline. 36 test cases pass. EndpointsContractTest currently in androidUnitTest/ — Plan 02-09 owns iOS Native HAR resource bundling and will promote to commonTest. Next: Wave 5 plans 02-07 (kill-switch) + 02-09 (CI iOS jobs)."
+last_updated: "2026-04-29T11:30:00.000Z"
+last_activity: 2026-04-29 -- Phase 02 Wave 4 complete (plan 02-06 merged from worktree)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 11
-  percent: 73
+  completed_plans: 12
+  percent: 80
 ---
 
 # Project State
@@ -25,32 +25,32 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 ## Current Position
 
-Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 3 done; 02-06..02-09 pending)
-Plans: 5 of 9 (02-01 ✓, 02-02 ✓, 02-03 ✓, 02-04 ✓, 02-05 ✓; 02-06..02-09 pending)
-Status: Ready for Wave 4 (Plan 02-06 :core:api-avers-v4 DTOs + EndpointsContractTest)
-Last activity: 2026-04-29 -- Phase 02 Wave 3 complete (plan 02-05 merged from worktree)
+Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 4 done; 02-07, 02-08, 02-09 pending)
+Plans: 6 of 9 (02-01 ✓, 02-02 ✓, 02-03 ✓, 02-04 ✓, 02-05 ✓, 02-06 ✓; 02-07..02-09 pending)
+Status: Ready for Wave 5 (Plans 02-07 kill-switch + 02-09 CI iOS jobs)
+Last activity: 2026-04-29 -- Phase 02 Wave 4 complete (plan 02-06 merged from worktree)
 
-Progress: [█████░░░░░] 45% (1/6 phases shipped, Phase 02 5/9 plans done)
+Progress: [██████░░░░] 55% (1/6 phases shipped, Phase 02 6/9 plans done)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5
-- Average duration: ~28 min (executor agents)
-- Total execution time: ~3.5 hours
+- Total plans completed: 6
+- Average duration: ~30 min (executor agents)
+- Total execution time: ~4.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 1 | 15 min | 15 min |
-| 2 | 4 | ~130 min | ~32 min |
+| 2 | 5 | ~165 min | ~33 min |
 
 **Recent Trend:**
 
-- 02-01-skeleton (15 min) → 02-02-har-capture (45 min programmatic) → Wave 2 parallel: 02-03-room (50 min) + 02-04-network (21 min) → Wave 3 sequential: 02-05-cookies (13 min)
-- Trend: 02-05 fastest plan in phase — single-module work with clear contract from Wave 2 merge prep + reused Spec/Wrapper test pattern from 02-03
+- 02-01-skeleton (15 min) → 02-02-har-capture (45 min programmatic) → Wave 2 parallel: 02-03-room (50 min) + 02-04-network (21 min) → Wave 3: 02-05-cookies (13 min) → Wave 4: 02-06-api-contract (38 min, largest plan)
+- Trend: 02-06 fastest large-plan execution — clear contract from 02-02-SUMMARY API spec + 02-04/02-05 wiring made HarReplayMockEngine straightforward; deviation count (7) reflects integration discovery, not blockers
 
 *Updated after each plan completion*
 
@@ -73,6 +73,10 @@ Recent decisions affecting current work:
 - Plan 02-02 retroactively flipped `autonomous: true` — programmatic capture replaces manual Chrome DevTools (12 sanitized fixtures committed; auth + 6 endpoint contracts derived from `site/client/*.js`)
 - Ktor pinned at 3.3.3 (downgraded from 3.4.3 in Plan 02-04 merge) — 3.4.x requires Kotlin 2.3.0 which breaks Compose Multiplatform 1.10.3 binary metadata. Plans 02-05/02-06 must target 3.3.3.
 - :core:platform Android `applicationContextHolder` visibility lifted private→internal so `ApplicationContextProvider.kt` (also in androidMain) can read it — preserves BL-02 mutability discipline at module level (Plan 02-03 D-19)
+- AVERS DTOs use POSITIONAL KSerializer (responses are arrays-of-arrays, not objects). All DTO files in :core:api-avers-v4 carry custom serializers; do not switch to @Serializable data class with named fields (would break parsing).
+- AversApiError.AntiBotChallenge is a `data class(rawHtml: String)`, not an object — Phase 3 WebView fallback receives the captcha page payload (D-06 reconciliation in Plan 02-06)
+- AVERS endpoint URL constants live in `AversEndpoints` object in :core:api-avers-v4 — single source of truth, captured from Plan 02-02 HAR fixtures: `/login`, `/auth/logout`, `/act/GET_STUDENT_JOURNAL_DATA`, `/act/GET_TIMETABLE`, `/act/GET_STUDENT_DAIRY`, `/act/GET_ATT_JOURNAL_DATA`, `/act/get_sms`
+- `EndpointsContractTest` lives in `androidUnitTest/` (NOT commonTest) post-02-06 — Plan 02-09 owns iOS Native HAR resource bundling and is responsible for promoting it to commonTest with `fixtures.dir` system property wiring
 
 ### Pending Todos
 
@@ -106,5 +110,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-04-29
-Stopped at: Wave 3 complete. Plan 02-05 merged. AVERS auth chain end-to-end ready: HttpClientFactory → AversAuthInterceptor → RoomCookiesStorage → CookieDao → per-account journal_${accountId}.db. AccountDataPurger orchestrates cross-account leak prevention (D-04). 27 cookies/purge test cases green on Android JVM + iOS-side compile passes.
-Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-05-SUMMARY.md (Plan 02-06 must read it + 02-02-SUMMARY.md API contract section before building :core:api-avers-v4 DTOs and HarReplayMockEngine)
+Stopped at: Wave 4 complete. Plan 02-06 merged — :core:api-avers-v4 typed endpoint contract production-ready. Full pipeline proof: 12 sanitized HAR fixtures × 2 accounts replay green through HttpClientFactory → AversAuthInterceptor → RoomCookiesStorage → HarReplayMockEngine → AversApi → ExtJsArrayPreprocessor → DTO → ApiResult. 36 test cases pass Android JVM. EndpointsContractTest in androidUnitTest/ pending iOS promotion in 02-09.
+Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-06-SUMMARY.md (Plan 02-07 reads it for KillSwitchClient — uses ApiResult/AversApiError contract; Plan 02-09 reads it for iOS HarReplayMockEngine.ios.kt skeleton + commonTest promotion)
