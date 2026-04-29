@@ -23,6 +23,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.kermit)
             implementation(project(":core:platform"))
+            implementation(project(":core:database"))
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
