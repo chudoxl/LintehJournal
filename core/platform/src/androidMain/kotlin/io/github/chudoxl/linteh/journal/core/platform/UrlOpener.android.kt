@@ -25,7 +25,12 @@ import co.touchlab.kermit.Logger
  * TODO(Phase 4): Refactor to CompositionLocal-based access (LocalContext.current + Koin scope) —
  * тогда private holder исчезнет естественно.
  */
-private var applicationContextHolder: Context? = null
+// Phase 2: visibility lifted from `private` to `internal` so [ApplicationContextProvider.kt]
+// in the same `:core:platform/androidMain` source set can read the holder for
+// `:core:database/DatabaseFactory.android.kt` consumption (Plan 02-03 D-19, PATTERNS line 217).
+// `internal` preserves BL-02 mutability discipline at module-level (still hidden outside
+// :core:platform; downstream modules cannot reassign nor read).
+internal var applicationContextHolder: Context? = null
 
 fun initApplicationContext(context: Context) {
     check(applicationContextHolder == null) {
