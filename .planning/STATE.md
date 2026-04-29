@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Phase 2 context gathered. 28 decisions across 4 gray areas: Chrome DevTools HAR capture (требует ROADMAP success #1 edit), `:core:api-avers-v4` отдельный модуль с типизированными DTO + sealed `AversApiError`, Room bootstrap в Phase 2 (schema v1 cookies-only, `journal_default.db`), full 6-endpoint contract с cross-account proof. Critical addenda: redactor работает в debug; Phase 6 reminder переключить iOS file protection."
-last_updated: "2026-04-28T19:30:00.000Z"
-last_activity: 2026-04-28 -- Phase 02 plan 02-01 complete (infrastructure bootstrap)
+stopped_at: "Phase 02 plan 02-02 complete (programmatic HAR capture). 12 sanitized HAR fixtures committed (6 endpoints × 2 accounts) cross-account proof: A user_id=3020 cls=1013, B user_id=2684 cls=1015. Auth mechanism reverse-engineered: ys-user/ys-password/ys-userId client-set cookies via Ext.state.CookieProvider, JS escape() polyfill required for Cyrillic logins. Plan 02-02 SUMMARY documents API contract for Plan 06."
+last_updated: "2026-04-29T08:30:00.000Z"
+last_activity: 2026-04-29 -- Phase 02 plan 02-02 complete (programmatic HAR capture)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 15
-  completed_plans: 7
-  percent: 47
+  completed_plans: 8
+  percent: 53
 ---
 
 # Project State
@@ -25,31 +25,32 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 ## Current Position
 
-Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 1 partial; 02-02 HAR capture pending manual user action)
-Plans: 1 of 9 (02-01 ✓; 02-02..02-09 pending)
-Status: Paused at HAR-capture checkpoint (Plan 02-02 autonomous: false)
-Last activity: 2026-04-28 -- Phase 02 plan 02-01 complete (infrastructure bootstrap)
+Phase: 02 (api-reverse-engineering-network-layer) — EXECUTING (Wave 1 partial; 02-03..02-09 pending)
+Plans: 2 of 9 (02-01 ✓, 02-02 ✓; 02-03..02-09 pending)
+Status: Ready for next plan (02-03)
+Last activity: 2026-04-29 -- Phase 02 plan 02-02 complete (programmatic HAR capture)
 
-Progress: [██░░░░░░░░] 18% (1/6 phases shipped, Phase 02 1/9 plans done — paused on HAR capture)
+Progress: [███░░░░░░░] 22% (1/6 phases shipped, Phase 02 2/9 plans done)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 1
-- Average duration: 15 min
-- Total execution time: 0.25 hours
+- Total plans completed: 2
+- Average duration: ~30 min
+- Total execution time: ~1 hour
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 | 1 | 15 min | 15 min |
+| 2 | 1 | 45 min | 45 min |
 
 **Recent Trend:**
 
-- Last 5 plans: 01-01-skeleton (15 min)
-- Trend: baseline
+- Last 5 plans: 01-01-skeleton (15 min), 02-02-har-capture (45 min programmatic — replaced manual checkpoint)
+- Trend: baseline (extra time on 02-02 due to discovering ys-* cookie auth + JS escape polyfill)
 
 *Updated after each plan completion*
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - Gradle wrapper baseline = 8.13 (поднят с 8.10 в Plan 01-01 — kotlin-dsl Kotlin 2.0.21 совместим с Compose Gradle Plugin 1.10.3 binary metadata)
 - Root build.gradle.kts применяет ВСЕ used plugins через alias(...) apply false — Now in Android pattern; convention plugins вызывают pluginManager.apply(...) без classpath гимнастики
 - composeApp применяет raw plugins (alias) вместо lintech-kmp — это application module, а lintech-kmp применяет com.android.library
+- AVERS auth = client-set cookies (`ys-user`/`ys-password`/`ys-userId`) via Ext.state.CookieProvider — server never issues Set-Cookie; cookie values use JS escape() with `%uXXXX` for codepoints ≥256 (mandatory for Cyrillic logins)
+- AVERS responses are NOT strict JSON (contain `new Date(YYYY,MM,DD,...)` literals) — Plan 06 client must pre-process response text or implement tolerant parser
+- Plan 02-02 retroactively flipped `autonomous: true` — programmatic capture replaces manual Chrome DevTools (12 sanitized fixtures committed; auth + 6 endpoint contracts derived from `site/client/*.js`)
 
 ### Pending Todos
 
@@ -99,6 +103,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-04-28
-Stopped at: Phase 2 context gathered. 28 decisions across 4 gray areas: Chrome DevTools HAR capture (требует ROADMAP success #1 edit), `:core:api-avers-v4` отдельный модуль с типизированными DTO + sealed `AversApiError`, Room bootstrap в Phase 2 (schema v1 cookies-only, `journal_default.db`), full 6-endpoint contract с cross-account proof. Critical addenda: redactor работает в debug; Phase 6 reminder переключить iOS file protection.
-Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-CONTEXT.md (downstream agents MUST read)
+Last session: 2026-04-29
+Stopped at: Plan 02-02 complete via programmatic capture. 12 sanitized HAR fixtures committed. Auth mechanism + 6 endpoint contracts documented in 02-02-SUMMARY.md for downstream Plan 06 (`:core:api-avers-v4`) consumption.
+Resume file: .planning/phases/02-api-reverse-engineering-network-layer/02-02-SUMMARY.md (Plan 06 must read API contract section before building HttpClient + endpoint DTOs)
