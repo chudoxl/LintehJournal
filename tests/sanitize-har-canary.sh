@@ -5,6 +5,12 @@
 # If real surnames slipped through (sanitization regex missed a case), fail PR.
 set -euo pipefail
 
+# Force C.UTF-8 collation — under ru_RU.UTF-8 GNU grep treats `[а-яё]` as
+# case-insensitive (matches Cyrillic uppercase too) which causes false positives
+# on subject names, UI labels, and acronyms (e.g. "АИАС АВЕРС", "Окно загрузки").
+# C.UTF-8 keeps UTF-8 byte handling but uses POSIX (case-sensitive) collation.
+export LC_ALL=C.UTF-8
+
 echo "Step 1: ensure fixtures/sanitized/ exists"
 test -d fixtures/sanitized || { echo "fixtures/sanitized/ missing — create or run sanitizer first"; exit 1; }
 

@@ -1,6 +1,10 @@
 # Cookie names whose values get replaced with 32 'X' characters.
-# Initial list — extend after first HAR capture (Plan 02) reveals AVERS cookie names.
+# Confirmed real names from Plan 02-02 capture: ys-user, ys-password, ys-userId
+# are AVERS auth cookies (set client-side via Ext.state.CookieProvider).
 cookie_names:
+  - ys-user
+  - ys-password
+  - ys-userId
   - JSESSIONID
   - PHPSESSID
   - sessionId
@@ -8,3 +12,16 @@ cookie_names:
   - aversSession
   - csrf_token
   - XSRF-TOKEN
+
+# Form fields in /login and /auth POST bodies. Replaced with REDACTED placeholder.
+login_param_names:
+  - l         # AVERS login (Cyrillic surname)
+  - p         # SHA1 hex of password
+
+# Explicit single-word strings to redact. Used when the standard 2-word ФИО
+# regex misses a context (e.g., get_user_data API splits ФИО into 3 separate
+# fields: ["lastname", "firstname_initial", "patronymic_initial", ...]). Real
+# surnames extracted from raw fixtures go here. Treated as case-sensitive
+# whole-word matches; replaced with deterministic fake from NAME_POOL.
+replace_strings:
+  - Чудиновских

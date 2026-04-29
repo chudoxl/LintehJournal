@@ -49,6 +49,15 @@ def deterministic_fake(real_name: str) -> str:
 def sanitize_text(text: str) -> str:
     text = RU_FULLNAME_RE.sub(lambda m: deterministic_fake(m.group(0)), text)
     text = RU_INITIAL_RE.sub(lambda m: deterministic_fake(m.group(0)), text)
+    # Explicit single-word surname redactions from rules — covers cases where
+    # ФИО is split into separate fields (e.g. ["lastname","i","p"]) and the
+    # 2-word regex never sees lastname adjacent to firstname.
+    for word in rules.get("replace_strings", []):
+        text = re.sub(
+            rf'\b{re.escape(word)}\b',
+            lambda m: deterministic_fake(m.group(0)),
+            text,
+        )
     # Cookie values
     for cookie_name in rules.get("cookie_names", []):
         text = re.sub(
@@ -61,12 +70,34 @@ def sanitize_text(text: str) -> str:
     return text
 
 
+def sanitize_login_form(text: str) -> str:
+    """Redact `l=...&p=...` form params inside /login POST body text."""
+    for param in rules.get("login_param_names", []):
+        text = re.sub(
+            rf'(^|&)({re.escape(param)})=[^&\s]*',
+            r'\1\2=REDACTED',
+            text,
+        )
+    return text
+
+
 def walk_har(har: dict) -> dict:
     """Recursively descend into HAR entries, applying sanitization to text bodies."""
     for entry in har.get("log", {}).get("entries", []):
+        url = entry["request"].get("url", "")
+        is_login = url.endswith("/login") or url.endswith("/auth") or "/login?" in url
         # Request body
-        if "postData" in entry["request"] and "text" in entry["request"]["postData"]:
-            entry["request"]["postData"]["text"] = sanitize_text(entry["request"]["postData"]["text"])
+        post_data = entry["request"].get("postData")
+        if post_data and "text" in post_data:
+            post_data["text"] = sanitize_text(post_data["text"])
+            if is_login:
+                post_data["text"] = sanitize_login_form(post_data["text"])
+            # Also redact named params if present
+            if is_login and "params" in post_data:
+                names_to_redact = set(rules.get("login_param_names", []))
+                for p in post_data["params"]:
+                    if p.get("name") in names_to_redact:
+                        p["value"] = "REDACTED"
         # Response body
         content = entry.get("response", {}).get("content", {})
         if "text" in content:
