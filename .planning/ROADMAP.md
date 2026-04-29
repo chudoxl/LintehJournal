@@ -12,8 +12,8 @@ Compose Multiplatform мобильный клиент к ИАС АВЕРС (за
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Compliance Infrastructure** — Gradle multi-module skeleton, convention plugins, SwiftPM, CI обе платформы, Privacy Manifest stub, Privacy Policy опубликована
-- [ ] **Phase 2: API Reverse-Engineering & Network Layer** — mitmproxy/HAR-захват закрытого ExtJS-API АВЕРС, Ktor per-account клиент с persistent cookies, versioned API-модуль (HIGHEST uncertainty)
+- [x] **Phase 1: Foundation & Compliance Infrastructure** — Gradle multi-module skeleton, convention plugins, SwiftPM, CI обе платформы, Privacy Manifest stub, Privacy Policy опубликована (completed 2026-04-28)
+- [x] **Phase 2: API Reverse-Engineering & Network Layer** — Chrome DevTools/programmatic HAR-захват закрытого ExtJS-API АВЕРС, Ktor per-account клиент с persistent cookies, versioned API-модуль (HIGHEST uncertainty) (completed 2026-04-29; verification pending)
 - [ ] **Phase 3: Auth & Secure Credential Storage** — login/password АВЕРС, Keychain/Keystore через KVault с защитой от iCloud-утечки, logout с очисткой данных
 - [ ] **Phase 4: UI Shell, Grades & Offline Foundation** — core:ui + composeApp + Navigation 3, оценки end-to-end, offline-first паттерн, staleness indicators, тёмная тема, локализация RU, accessibility, прогноз и график
 - [ ] **Phase 5: Multi-Account, Schedule, Homework, Attendance & Messages** — per-account scope активирован, оставшиеся вертикали копируют паттерн grades
@@ -57,26 +57,26 @@ Plans:
 
 Plans:
 
-**Wave 1** *(parallelisable; Plan 02 is `autonomous: false` — manual HAR capture)*
-- [x] 02-01-PLAN.md — Gradle deps + `:core:database`+`:core:api-avers-v4` skeletons + sanitize-har tooling + log-redactor canary + ROADMAP edit (mitmproxy → Chrome DevTools)
-- [ ] 02-02-PLAN.md — HAR captures (account-A + account-B × 6 endpoints, 12 sanitized fixtures)
+**Wave 1** *(parallelisable; Plan 02 retroactively autonomous: true — programmatic capture via tools/capture-avers-fixtures.py)*
+- [x] 02-01-PLAN.md — Gradle deps + `:core:database`+`:core:api-avers-v4` skeletons + sanitize-har tooling + log-redactor canary + ROADMAP edit (mitmproxy → Chrome DevTools) (completed 2026-04-28)
+- [x] 02-02-PLAN.md — HAR captures (account-A + account-B × 6 endpoints, 12 sanitized fixtures) (completed 2026-04-29 programmatically — see 02-02-SUMMARY.md)
 
-**Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 02-03-PLAN.md — Room JournalDatabase + DatabaseFactory + Cookie schema v1 + iOS NSFileProtectionComplete
-- [ ] 02-04-PLAN.md — HttpClientFactory + plugin chain + HttpRequestRedactor + AversAuthInterceptor + CredentialProvider
+**Wave 2** *(parallel worktree execution)*
+- [x] 02-03-PLAN.md — Room JournalDatabase + DatabaseFactory + Cookie schema v1 + iOS NSFileProtectionComplete (completed 2026-04-29; iOS NSFileProtection deferred to Phase 6 per 02-CONTEXT.md)
+- [x] 02-04-PLAN.md — HttpClientFactory + plugin chain + HttpRequestRedactor + AversAuthInterceptor + CredentialProvider (completed 2026-04-29; Ktor downgraded 3.4.3 → 3.3.3 to preserve Compose 1.10.3 binary metadata)
 
-**Wave 3** *(blocked on Wave 2)*
-- [ ] 02-05-PLAN.md — RoomCookiesStorage + CookieMapper + AccountDataPurger
+**Wave 3**
+- [x] 02-05-PLAN.md — RoomCookiesStorage + CookieMapper + AccountDataPurger (completed 2026-04-29)
 
-**Wave 4** *(blocked on Wave 3)*
-- [ ] 02-06-PLAN.md — `:core:api-avers-v4` DTOs + ApiResult + AversApiError + 6-endpoint contract tests via HAR replay
+**Wave 4**
+- [x] 02-06-PLAN.md — `:core:api-avers-v4` DTOs + ApiResult + AversApiError + 6-endpoint contract tests via HAR replay (completed 2026-04-29; 12 EndpointsContractTest cases × 2 accounts replay green)
 
-**Wave 5** *(parallelisable; both blocked on Wave 4)*
-- [ ] 02-07-PLAN.md — KillSwitchClient + docs/api-config.json (GitHub Pages-deployed)
-- [ ] 02-09-PLAN.md — CI iOS test invocations (`:core:database/network/api-avers-v4:iosX64Test`) + canary scripts wired + iOS Native HAR resource loading
+**Wave 5** *(parallel worktree execution)*
+- [x] 02-07-PLAN.md — KillSwitchClient + docs/api-config.json (GitHub Pages-deployed) (completed 2026-04-29; D-13 fail-open + D-14 cache + T-02-38 hardening)
+- [x] 02-09-PLAN.md — CI iOS test invocations (`:core:database/network/api-avers-v4:iosX64Test`) + canary scripts wired + iOS Native HAR resource loading (completed 2026-04-29; EndpointsContractTest promoted to commonTest)
 
-**Wave 6** *(blocked on Waves 4 & 5)*
-- [ ] 02-08-PLAN.md — docs/aversApiV4_23813.md (API contract narrative) + changelog + tools/manual-smoke.sh
+**Wave 6**
+- [x] 02-08-PLAN.md — docs/aversApiV4_23813.md (API contract narrative) + changelog + tools/manual-smoke.sh (completed 2026-04-29)
 
 **Cross-cutting constraints** (truths appearing in 2+ plans — executor MUST preserve across waves):
 - HttpRequestRedactor canary `kanareyka_PASSWORD_DO_NOT_LEAK_42` greps clean in BOTH debug and release builds (D-28; introduced in 02-01, validated in 02-04 / 02-09)
