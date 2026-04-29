@@ -1,9 +1,9 @@
 ---
 phase: 2
 slug: api-reverse-engineering-network-layer
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-28
 ---
 
@@ -100,6 +100,6 @@ Wave 0 (test infrastructure scaffolding) MUST exist before any endpoint or stora
 - [ ] Feedback latency < 30s local Android JVM
 - [ ] iOS Native test invocations добавлены в `.github/workflows/ci.yml` macos-15 job (`:core:network:iosX64Test`, `:core:database:iosX64Test`, `:core:api-avers-v4:iosX64Test`)
 - [ ] log-redactor-canary + sanitize-har-canary интегрированы в CI Android job (ubuntu-latest)
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] `nyquist_compliant: true` set in frontmatter (flipped 2026-04-29 after verifier PASS 5/5; status flipped draft → complete, wave_0_complete false → true; all sign-off bullets met per VERIFICATION.md)
 
 **Approval:** pending
